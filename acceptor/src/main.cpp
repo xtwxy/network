@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <iostream>
 #include <map>
 #include <string>
@@ -45,7 +46,7 @@ public:
 		accept();
 	}
 private:
-	void onAccept(Connection::Ptr conn, boost::system::error_code& ec) {
+	void onAccept(Connection::Ptr conn, const boost::system::error_code& ec) {
 		if(!ec) {
 			conn->start();
 		} else {
@@ -56,7 +57,9 @@ private:
 	void accept() {
 		Connection::Ptr ptr = Connection::newConnection(ios_, TIMEOUT_SECONDS);
 		acceptor_.async_accept(ptr->socket(), 
-				boost::bind(&Acceptor::onAccept, shared_from_this(), ptr, _1)
+				boost::bind(&Acceptor::onAccept,
+						shared_from_this(),
+						ptr, boost::asio::placeholders::error)
 			);
 	}
 	boost::asio::io_service& ios_;
