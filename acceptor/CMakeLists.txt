@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 2.8)
+
+PROJECT(acceptor)
+
+set(CMAKE_CXX_FLAGS "-O3 -Wall -fPIC")
+set(EXECUTABLE_OUTPUT_PATH $ENV{HOME}/binary/enumlator/bin)
+set(LIBRARY_OUTPUT_PATH $ENV{HOME}/binary/enumlator/lib)
+
+set(Boost_USE_MULTITHREAD ON)
+FIND_PACKAGE(Boost)
+
+INCLUDE_DIRECTORIES(include ${INCLUDE_DIRECTORIES} ${Boost_INCLUDE_DIRS})
+LINK_DIRECTORIES(${LINK_DIRECTORIES} ${Boost_LIBRARY_DIRS} ${LIBRARY_OUTPUT_PATH})
+
+INCLUDE_DIRECTORIES(include)
+SET(SRCS src/main.cpp)
+
+ADD_EXECUTABLE(acceptor ${SRCS})
+#ADD_LIBRARY(acceptor SHARED ${SRCS})
+TARGET_LINK_LIBRARIES(acceptor boost_system pthread)
