@@ -41,6 +41,7 @@ void onConnectComplete(
 		read();
 		write();
 	} else {
+		std::cerr << "onConnectComplete(): " << ec << std::endl;
 	}
 }
 
@@ -56,6 +57,7 @@ void onResolveComplete(
 				onConnectComplete
 			);
 	} else {
+		std::cerr << "onResolveComplete(): " << ec << std::endl;
 	}
 }
 
@@ -72,7 +74,7 @@ void onReadComplete(const boost::system::error_code& ec,
 	if (!ec) {
 		read();
 	} else {
-		std::cerr << ec << std::endl;
+		std::cerr << "onReadComplete(): " << ec << std::endl;
 	}
 
 }
@@ -81,7 +83,7 @@ void onWriteComplete(const boost::system::error_code& ec,
 	if (!ec) {
 		write();
 	} else {
-		std::cerr << ec << std::endl;
+		std::cerr << "onWriteComplete(): " << ec << std::endl;
 	}
 }
 

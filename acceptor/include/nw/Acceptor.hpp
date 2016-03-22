@@ -20,7 +20,7 @@
 namespace nw {
 
 void print_buffer(const char* const buffer, const std::size_t length, const char* comment = "[bytes] ") {
-	printf("%s\n", comment);
+	printf("%s: ", comment);
 	for (std::size_t i = 0; i < length; ++i) {
 		printf("%2.2x ", (0xff & buffer[i]));
 	}
