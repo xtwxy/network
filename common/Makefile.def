@@ -1,0 +1,10 @@
+ifeq ($(OS),Windows_NT)
+  DLL = .dll
+  EXE = .exe
+else ifeq ($(shell uname -s),Darwin)
+  DLL = .dylib
+  EXE = 
+else
+  DLL = .so
+  EXE = 
+endif
