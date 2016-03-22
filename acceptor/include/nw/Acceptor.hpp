@@ -53,7 +53,7 @@ public:
 	}
 	void start() {
 		// start reader/writer
-		std::cerr << "Connection::start()" << std::endl;
+		std::cerr << __FILE__ << "(" << __LINE__ << ") Connection::start()" << std::endl;
 		read();
 	}
 	boost::asio::ip::tcp::socket& socket() {
@@ -104,7 +104,7 @@ private:
 				echo();
 			}
 		} else {
-			std::cerr << ec << std::endl;
+			std::cerr << __FILE__ << "(" << __LINE__ << ") " << ec << std::endl;
 		}
 
 	}
@@ -115,7 +115,7 @@ private:
 		if(!ec) {
 			read();
 		} else {
-			std::cerr << ec << std::endl;
+			std::cerr << __FILE__ << "(" << __LINE__ << ") " << ec << std::endl;
 		}
 	}
 	boost::asio::io_service& ios_;

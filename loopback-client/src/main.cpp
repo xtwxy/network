@@ -20,8 +20,7 @@ void onWriteComplete(const boost::system::error_code& ec,
 		size_t bytes_transferred);
 
 void read() {
-	async_write(
-			sock,
+	sock.async_read_some(
 			boost::asio::buffer(readBuffer, BUFFER_SIZE),
 			onReadComplete
 	);
