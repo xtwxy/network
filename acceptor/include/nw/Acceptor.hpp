@@ -19,7 +19,8 @@
 
 namespace nw {
 
-void print_buffer(const char* const buffer, const std::size_t length, std::string comment = "[bytes] ") {
+void print_buffer(const char* const buffer, const std::size_t length, const char* comment = "[bytes] ") {
+	printf("%s\n", comment);
 	for (std::size_t i = 0; i < length; ++i) {
 		printf("%2.2x ", (0xff & buffer[i]));
 	}
@@ -63,6 +64,11 @@ private:
 		memcpy(writeBuffer_, readBuffer_, bytesRead);
 		bytesToWrite = bytesRead;
 		bytesRead = 0;
+
+#ifdef PRINT_BUFFER
+				print_buffer(writeBuffer_, bytesToWrite, "[ECHO] ");
+#endif
+
 		write();
 	}
 	void read() {
@@ -81,7 +87,7 @@ private:
 				socket_,
 				boost::asio::buffer(writeBuffer_, bytesToWrite),
 				boost::bind(
-						&Connection::onReadComplete,
+						&Connection::onWriteComplete,
 						shared_from_this(),
 						_1,
 						_2
@@ -95,9 +101,6 @@ private:
 		if(!ec) {
 			bytesRead += bytes_transferred;
 			if(bytesRead != 0) {
-#ifdef PRINT_BUFFER
-				print_buffer(readBuffer_, bytesRead, "[READ] ");
-#endif
 				echo();
 			}
 		} else {
@@ -110,9 +113,7 @@ private:
 			size_t bytes_transferred
 		) {
 		if(!ec) {
-#ifdef PRINT_BUFFER
-				print_buffer(writeBuffer_, bytesRead, "[WRITTEN] ");
-#endif
+			read();
 		} else {
 			std::cerr << ec << std::endl;
 		}
