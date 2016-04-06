@@ -1,11 +1,9 @@
 include ../common/Makefile.def
 
-TARGET = acceptor$(EXE)
+TARGET = codec$(EXE)
 
 SOURCES = \
-	src/CodecFactory.cpp \
-	src/LogFilter.cpp \
-   src/main.cpp 
+    src/main.cpp 
 
 INCLUDE += -Iinclude
 
