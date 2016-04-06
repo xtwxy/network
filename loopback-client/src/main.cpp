@@ -5,10 +5,10 @@
 #include <boost/asio.hpp>
 #include <boost/asio/buffer.hpp>
 
-const static int BUFFER_SIZE = 4096;
+static int BUFFER_SIZE = 4096;
 
-char readBuffer[BUFFER_SIZE];
-char writeBuffer[BUFFER_SIZE];
+char* readBuffer = NULL;//[BUFFER_SIZE];
+char* writeBuffer = NULL;//[BUFFER_SIZE];
 
 boost::asio::io_service ios;
 boost::asio::ip::tcp::resolver resolver(ios);
@@ -87,18 +87,25 @@ void onWriteComplete(const boost::system::error_code& ec,
 }
 
 int main(int argc, char* argv[]) {
-	if(argc != 3) {
+	if(argc < 3) {
 		std::cerr << "Usage:\n"
 			<< argv[0] << "<host> <port>"
 			<< std::endl; 
 			return EXIT_FAILURE;
+	} else if(argc == 4) {
+		BUFFER_SIZE = atoi(argv[3]);
 	}
+	readBuffer = new char[BUFFER_SIZE];
+	writeBuffer = new char[BUFFER_SIZE];
 	for(std::size_t i = 0; i != BUFFER_SIZE; ++i) {
 		readBuffer[i] = i;
 		writeBuffer[i]	= i;
 	}
 	resolve(argv[1], argv[2]);
 	ios.run();
+	delete[] readBuffer;
+	delete[] writeBuffer;
+
 	return EXIT_SUCCESS;
 }
 
