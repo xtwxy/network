@@ -1,7 +1,7 @@
 OBJECTS = $(subst .cpp,.o,$(SOURCES))
 
-INCLUDE += -I/usr/include
-LIB += -lboost_system -lpthread
+INCLUDE += -I/usr/include -I$(HOME)/binary/boost/include
+LIB += -L$(HOME)/binary/boost/lib -lboost_system -lpthread
 
 
 CXX_FLAGS += -O3

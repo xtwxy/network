@@ -6,8 +6,9 @@ SOURCES = \
     src/example.cpp \
     src/main.cpp
 
-INCLUDE=
-LIB=
+INCLUDE= -I$(HOME)/binary/boost/include
+LIB= -L$(HOME)/binary/boost/lib
+
 CXX_FLAGS += 
 
 include ../common/Makefile.in
