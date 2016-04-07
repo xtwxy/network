@@ -7,5 +7,4 @@ BOOST_AUTO_TEST_CASE( example_test ) {
 	BOOST_CHECK_EQUAL( true, false );
 }
 
-
 BOOST_AUTO_TEST_SUITE_END();
