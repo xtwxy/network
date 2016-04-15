@@ -11,7 +11,11 @@ namespace battery {
 
 struct AnalogInputs {
  public:
-  AnalogInputs() { }
+  AnalogInputs() :
+  cellVolts_(),
+  batteryVolts_(0),
+  batteryCurrent_(0),
+  cellTemperatures_() { }
   AnalogInputs(const AnalogInputs& rhs) {
     this->cellVolts_ = rhs.cellVolts_;
     this->batteryVolts_ = rhs.batteryVolts_;
