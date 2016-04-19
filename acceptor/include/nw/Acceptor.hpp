@@ -8,6 +8,8 @@
 #ifndef INCLUDE_NW_ACCEPTOR_HPP_
 #define INCLUDE_NW_ACCEPTOR_HPP_
 
+#include <cstdio>
+#include <iostream>
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
@@ -43,6 +45,7 @@ public:
 		 bytesRead(0) { }
 	virtual ~Connection() {
 		std::cerr << "Connection::~Connection()" << std::endl;
+		socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
 		socket_.close();
 		delete[] readBuffer_;
 		delete[] writeBuffer_;

@@ -35,6 +35,7 @@ struct AnalogInputs {
   virtual ~AnalogInputs() { }
 
   void load(std::istream& stream) {
+	assert(false);
     using boost::property_tree::ptree;
     ptree pt;
     read_json(stream, pt);

@@ -3,9 +3,10 @@ include ../common/Makefile.def
 TARGET = battery$(EXE)
 
 SOURCES = \
+    src/Command.cpp \
     src/main.cpp 
 
-INCLUDE += -Iinclude 
+INCLUDE += -Iinclude -I../acceptor/include
 
 LIB += -lpthread -L/usr/local/library -lrestbed 
 
