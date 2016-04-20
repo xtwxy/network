@@ -15,19 +15,62 @@ Decoder::Decoder(SessionPtr session,
 : session_(session),
   handler_(handler),
   bytesRead_(0),
-  BUFFER_SIZE(bufferSize) {
-
+  BUFFER_SIZE(bufferSize),
+  readBuffer_(new char[bufferSize]),
+  bytesToRead_(sizeof(Header) + sizeof(Tail)) {
+  action_ = boost::bind(&Decoder::decodeHeader, 
+                        shared_from_this());
 }
 
 void Decoder::operator ()() {
-	session_->read(
-
-			);
-
+  read();
 }
 
-Decoder::~Decoder() {
+void Decoder::read() {
+	session_->read(
+      readBuffer_ + bytesRead_,
+      bytesToRead_ - bytesRead_,
+      boost::bind(&Decoder::onReadComplete,
+                  shared_from_this(),
+                  _1,
+                  _2)
+			);
+}
 
+void Decoder::decodeHeader() {
+  Header* hdr = reinterpret_cast<Header*>(readBuffer_);
+  do {
+    if(hdr->valid()) {
+      bytesToRead_ += hdr->Len.value() + sizeof(Tail);
+      action_ = boost::bind(&Decoder::decodeToTail,
+                            shared_from_this());
+      break;
+    } else {
+      shiftReadBuffer(1);
+    }
+  } while(bytesRead >= sizeof(Header));
+
+  if(bytesToRead_ == bytesRead_) {
+    action_();
+  } else {
+    read();
+  }
+}
+
+void Decoder::decodeToTail() {
+  // 1.check tail signature
+  if() {
+
+  } else {
+
+  }
+  // 2.check checksum
+  // 3.output to next stage decode
+}
+
+
+Decoder::~Decoder() {
+  delete[] readBuffer_;
 }
 
 void Decoder::onReadComplete(
@@ -36,7 +79,13 @@ void Decoder::onReadComplete(
 	) {
 	if(!ec) {
 		bytesRead_ += bytes_transferred;
+    if(bytesToRead_ == bytesRead) {
+      action_();
+    } else {
+      read();
+    }
 	} else {
+    handler_(ec, readBuffer_, bytesRead_);
 	}
 }
 

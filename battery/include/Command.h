@@ -46,6 +46,22 @@ struct Header {
     SOI[4] = 0xfa;
     SOI[5] = 0x55;
   }
+  bool valid() {
+    if(SOI[0].value() != 0xfa) return false;
+    if(SOI[1].value() != 0x55) return false;
+    if(SOI[2].value() != 0xfa) return false;
+    if(SOI[3].value() != 0x55) return false;
+    if(SOI[4].value() != 0xfa) return false;
+    if(SOI[5].value() != 0x55) return false;
+
+    if(Addr.value() > 8) return false;
+    if(PackNo.value() > 8) return false;
+    if(Cmd.value() > 8) return false;
+    if(Len.value() > 132) return false;
+
+    return true;
+  }
+
   boost::endian::little_uint8_buf_t SOI[6];
   boost::endian::little_uint8_buf_t Addr;
   boost::endian::little_uint8_buf_t PackNo;
@@ -60,6 +76,15 @@ struct Tail {
     EOI[2] = 0xfd;
     EOI[3] = 0x22;
   }
+  bool valid() {
+    if(EOI[0].value() != 0xfd) return false;
+    if(EOI[1].value() != 0x22) return false;
+    if(EOI[2].value() != 0xfd) return false;
+    if(EOI[3].value() != 0x22) return false;
+
+    return true;
+  }
+
   boost::endian::little_uint16_buf_t Chksum;
   boost::endian::little_uint8_buf_t EOI[4];
 };

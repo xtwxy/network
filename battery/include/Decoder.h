@@ -37,8 +37,13 @@ public:
 	virtual ~Decoder();
 
 	void operator()();
+
 private:
-	void onReadComplete(
+  void decode();
+  std::size_t findHeader();
+  void shiftReadBuffer(std::size_t offset);
+  void read();
+  void onReadComplete(
 			const boost::system::error_code& ec,
 			size_t bytes_transferred
 		);
@@ -46,8 +51,11 @@ private:
 	SessionPtr session_;
 	CompletionHandler handler_;
 	std::size_t bytesRead_;
-	const int BUFFER_SIZE;
+	const std::size_t BUFFER_SIZE;
 	unsigned char* readBuffer_;
+  std::size_t bytesToRead_;
+  
+  boost::function<void ()> action_;
 };
 
 } /* namespace battery */
