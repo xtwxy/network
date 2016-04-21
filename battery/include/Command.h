@@ -135,7 +135,7 @@ public boost::noncopyable {
   void execute();
 
  private:
-  uint16_t checksum(char* buff, std::size_t len);
+
   void readFrame();
   void readComplete(const boost::system::error_code& ec,
 		  std::size_t bytes_transfered);

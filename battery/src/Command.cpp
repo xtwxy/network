@@ -81,15 +81,4 @@ void Command::readComplete(const boost::system::error_code& ec,
 
 }
 
-uint16_t Command::checksum(char* buff, std::size_t len) {
-  uint16_t sum = 0;
-  std::for_each(
-      buff,
-      buff + len,
-      [&sum] (unsigned char c) {
-      	  sum += c;
-      });
-  return sum;
-}
-
 } /* namespace battery */

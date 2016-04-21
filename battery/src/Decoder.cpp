@@ -5,6 +5,7 @@
  *      Author: master
  */
 
+#include <algorithm>
 #include <boost/bind.hpp>
 #include "Decoder.h"
 
@@ -42,7 +43,7 @@ void Decoder::decodeHeader() {
   Header* hdr = reinterpret_cast<Header*>(readBuffer_);
   do {
     if(hdr->valid()) {
-      bytesToRead_ += hdr->Len.value() + sizeof(Tail);
+      bytesToRead_ += sizeof(Header) + hdr->Len.value() + sizeof(Tail);
       action_ = boost::bind(&Decoder::decodeToTail,
                             shared_from_this());
       break;
@@ -60,17 +61,40 @@ void Decoder::decodeHeader() {
 
 void Decoder::decodeToTail() {
   // 1.check tail signature
-//  if() {
-//
-//  } else {
-//
-//  }
+	Header* hdr = reinterpret_cast<Header*>(readBuffer_);
+	Tail* tail = reinterpret_cast<Tail*>(readBuffer_
+			+ sizeof(Header)
+			+ hdr->Len.value());
+
+	boost::system::error_code bad_message =
+		          boost::system::errc::make_error_code(
+		              boost::system::errc::bad_message);
+  if(!tail->valid()) {
+	  handler_(bad_message, readBuffer_, bytesRead_);
+	  return;
+  }
+
   // 2.check checksum
+  uint16_t chksum = checksum(readBuffer_ + sizeof(Header::SOI),
+		sizeof(Header) - sizeof(Header::SOI) + hdr->Len.value());
+  if(chksum != tail->Chksum.value()) {
+	  handler_(bad_message, readBuffer_, bytesRead_);
+	  return;
+  }
+
   // 3.output to next stage decode
+  boost::system::error_code success =
+          boost::system::errc::make_error_code(
+              boost::system::errc::success);
+  handler_(success, readBuffer_, bytesRead_);
 }
 
 void Decoder::shiftReadBuffer(std::size_t offset) {
-
+	std::move(readBuffer_ + offset,
+			readBuffer_ + bytesRead_,
+			readBuffer_
+			);
+	bytesRead_ -= offset;
 }
 
 Decoder::~Decoder() {
@@ -89,9 +113,19 @@ void Decoder::onReadComplete(
 			read();
 		}
 	} else {
-		//handler_(ec, readBuffer_, bytesRead_);
+		handler_(ec, readBuffer_, bytesRead_);
 	}
 }
 
+uint16_t checksum(char* buff, std::size_t len) {
+  uint16_t sum = 0;
+  std::for_each(
+      buff,
+      buff + len,
+      [&sum] (unsigned char c) {
+      	  sum += c;
+      });
+  return sum;
+}
 
 } /* namespace battery */

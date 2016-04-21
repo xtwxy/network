@@ -21,11 +21,13 @@ namespace battery {
 
 class Session;
 
+uint16_t checksum(char* buff, std::size_t len);
+
 class Decoder : public boost::enable_shared_from_this<Decoder>,
 public boost::noncopyable {
 public:
 	typedef boost::shared_ptr<Decoder> Ptr;
-	typedef boost::shared_ptr<
+	typedef boost::function<
 			void (const boost::system::error_code&,
 					char*,
 					std::size_t)> CompletionHandler;
