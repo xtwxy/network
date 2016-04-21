@@ -5,6 +5,7 @@
  *      Author: master
  */
 
+#include <boost/bind.hpp>
 #include "Command.h"
 
 namespace battery {

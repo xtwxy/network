@@ -5,6 +5,7 @@
  *      Author: master
  */
 
+#include <boost/bind.hpp>
 #include "Decoder.h"
 
 namespace battery {
@@ -48,7 +49,7 @@ void Decoder::decodeHeader() {
     } else {
       shiftReadBuffer(1);
     }
-  } while(bytesRead >= sizeof(Header));
+  } while(bytesRead_ >= sizeof(Header));
 
   if(bytesToRead_ == bytesRead_) {
     action_();
@@ -59,15 +60,18 @@ void Decoder::decodeHeader() {
 
 void Decoder::decodeToTail() {
   // 1.check tail signature
-  if() {
-
-  } else {
-
-  }
+//  if() {
+//
+//  } else {
+//
+//  }
   // 2.check checksum
   // 3.output to next stage decode
 }
 
+void Decoder::shiftReadBuffer(std::size_t offset) {
+
+}
 
 Decoder::~Decoder() {
   delete[] readBuffer_;
@@ -79,13 +83,13 @@ void Decoder::onReadComplete(
 	) {
 	if(!ec) {
 		bytesRead_ += bytes_transferred;
-    if(bytesToRead_ == bytesRead) {
-      action_();
-    } else {
-      read();
-    }
+		if(bytesToRead_ == bytesRead_) {
+			action_();
+		} else {
+			read();
+		}
 	} else {
-    handler_(ec, readBuffer_, bytesRead_);
+		//handler_(ec, readBuffer_, bytesRead_);
 	}
 }
 

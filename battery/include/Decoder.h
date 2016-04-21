@@ -40,7 +40,8 @@ public:
 
 private:
   void decode();
-  std::size_t findHeader();
+  void decodeHeader();
+  void decodeToTail();
   void shiftReadBuffer(std::size_t offset);
   void read();
   void onReadComplete(
@@ -52,7 +53,7 @@ private:
 	CompletionHandler handler_;
 	std::size_t bytesRead_;
 	const std::size_t BUFFER_SIZE;
-	unsigned char* readBuffer_;
+	char* readBuffer_;
   std::size_t bytesToRead_;
   
   boost::function<void ()> action_;
