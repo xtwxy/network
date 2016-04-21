@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE( battery_CommandEncodeTest  ) {
 
 	battery::Session::Ptr session(new battery::Session(read, write, close));
 
-	battery::Command::Encoder encoder = [] (
+	battery::Command::DataEncoder encoder = [] (
 			char * const buff,                        // Output writeBuffer
             std::size_t size,                         // Length of bytes encoded
             boost::endian::little_uint8_buf_t& addr,  // Addr
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE( battery_CommandEncodeTest  ) {
 		return true;
 	};
 
-	battery::Command::Decoder decoder = [] (
+	battery::Command::DataDecoder decoder = [] (
 			char * const buff,                        // Output writeBuffer
             std::size_t size,                         // Length of bytes encoded
             boost::endian::little_uint8_buf_t& addr,  // Addr

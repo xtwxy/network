@@ -7,7 +7,8 @@
 
 #include <algorithm>
 #include <boost/bind.hpp>
-#include "Decoder.h"
+
+#include "../include/Codec.h"
 
 namespace battery {
 
@@ -20,12 +21,18 @@ Decoder::Decoder(SessionPtr session,
   BUFFER_SIZE(bufferSize),
   readBuffer_(new char[bufferSize]),
   bytesToRead_(sizeof(Header) + sizeof(Tail)) {
-  action_ = boost::bind(&Decoder::decodeHeader, 
-                        shared_from_this());
+  reset();
 }
 
 void Decoder::operator ()() {
   read();
+}
+
+void Decoder::reset() {
+	action_ = boost::bind(&Decoder::decodeHeader,
+	                        shared_from_this());
+	bytesRead_ = 0;
+	bytesToRead_ = (sizeof(Header) + sizeof(Tail));
 }
 
 void Decoder::read() {
@@ -71,6 +78,7 @@ void Decoder::decodeToTail() {
 		              boost::system::errc::bad_message);
   if(!tail->valid()) {
 	  handler_(bad_message, readBuffer_, bytesRead_);
+	  reset();
 	  return;
   }
 
@@ -79,6 +87,7 @@ void Decoder::decodeToTail() {
 		sizeof(Header) - sizeof(Header::SOI) + hdr->Len.value());
   if(chksum != tail->Chksum.value()) {
 	  handler_(bad_message, readBuffer_, bytesRead_);
+	  reset();
 	  return;
   }
 
@@ -87,6 +96,7 @@ void Decoder::decodeToTail() {
           boost::system::errc::make_error_code(
               boost::system::errc::success);
   handler_(success, readBuffer_, bytesRead_);
+  reset();
 }
 
 void Decoder::shiftReadBuffer(std::size_t offset) {

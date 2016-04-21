@@ -19,9 +19,9 @@ Session::~Session() {
 
 }
 
-Command::Command(Session::Ptr session,
-                 Encoder encoder,
-                 Decoder decoder,
+Command::Command(SessionPtr session,
+                 DataEncoder encoder,
+                 DataDecoder decoder,
                  CompletionHandler handler)
   : session_(session),
     encoder_(encoder),

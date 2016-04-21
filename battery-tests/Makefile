@@ -6,7 +6,7 @@ SOURCES = \
     src/AnalogInputsLoadTest.cpp \
     src/AnalogInputsSaveTest.cpp \
     src/CommandEncodeTest.cpp \
-    ../battery/src/Decoder.cpp \
+    ../battery/src/Codec.cpp \
     ../battery/src/Command.cpp \
     src/main.cpp
 
