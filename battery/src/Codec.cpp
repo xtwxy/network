@@ -10,9 +10,20 @@
 
 #include "../include/Codec.h"
 
-namespace battery {
+namespace codec {
 
-Decoder::Decoder(SessionPtr session,
+
+Session::Session(Read r, Write w, Close c) :
+    read(r), write(w), close(c) {
+
+    }
+
+Session::~Session() {
+
+}
+
+
+FrameDecoder::FrameDecoder(SessionPtr session,
 		CompletionHandler handler,
 		std::size_t bufferSize)
 : session_(session),
@@ -24,34 +35,34 @@ Decoder::Decoder(SessionPtr session,
   reset();
 }
 
-void Decoder::operator ()() {
+void FrameDecoder::operator ()() {
   read();
 }
 
-void Decoder::reset() {
-	action_ = boost::bind(&Decoder::decodeHeader,
+void FrameDecoder::reset() {
+	action_ = boost::bind(&FrameDecoder::decodeHeader,
 	                        shared_from_this());
 	bytesRead_ = 0;
 	bytesToRead_ = (sizeof(Header) + sizeof(Tail));
 }
 
-void Decoder::read() {
+void FrameDecoder::read() {
 	session_->read(
       readBuffer_ + bytesRead_,
       bytesToRead_ - bytesRead_,
-      boost::bind(&Decoder::onReadComplete,
+      boost::bind(&FrameDecoder::onReadComplete,
                   shared_from_this(),
                   _1,
                   _2)
 			);
 }
 
-void Decoder::decodeHeader() {
+void FrameDecoder::decodeHeader() {
   Header* hdr = reinterpret_cast<Header*>(readBuffer_);
   do {
     if(hdr->valid()) {
       bytesToRead_ += sizeof(Header) + hdr->Len.value() + sizeof(Tail);
-      action_ = boost::bind(&Decoder::decodeToTail,
+      action_ = boost::bind(&FrameDecoder::decodeToTail,
                             shared_from_this());
       break;
     } else {
@@ -66,7 +77,7 @@ void Decoder::decodeHeader() {
   }
 }
 
-void Decoder::decodeToTail() {
+void FrameDecoder::decodeToTail() {
   // 1.check tail signature
 	Header* hdr = reinterpret_cast<Header*>(readBuffer_);
 	Tail* tail = reinterpret_cast<Tail*>(readBuffer_
@@ -99,7 +110,7 @@ void Decoder::decodeToTail() {
   reset();
 }
 
-void Decoder::shiftReadBuffer(std::size_t offset) {
+void FrameDecoder::shiftReadBuffer(std::size_t offset) {
 	std::move(readBuffer_ + offset,
 			readBuffer_ + bytesRead_,
 			readBuffer_
@@ -107,11 +118,11 @@ void Decoder::shiftReadBuffer(std::size_t offset) {
 	bytesRead_ -= offset;
 }
 
-Decoder::~Decoder() {
+FrameDecoder::~FrameDecoder() {
   delete[] readBuffer_;
 }
 
-void Decoder::onReadComplete(
+void FrameDecoder::onReadComplete(
 		const boost::system::error_code& ec,
 		size_t bytes_transferred
 	) {

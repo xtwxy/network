@@ -3,11 +3,11 @@
 #include <boost/test/unit_test.hpp>
 #include "BatteryAI.hpp"
 
-BOOST_AUTO_TEST_SUITE(battery);
+BOOST_AUTO_TEST_SUITE(codec);
 
 BOOST_AUTO_TEST_CASE( battery_AnalogInputs_load_test  ) {
 
-  battery::AnalogInputs ai;
+  codec::AnalogInputs ai;
   
 	BOOST_CHECK( true );
 	BOOST_CHECK_EQUAL( true, false );

@@ -20,7 +20,7 @@ MockSession::MockSession(char* rdbuf, std::size_t availableToRead,
 MockSession::~MockSession() {
 }
 
-void MockSession::read(char* buff, std::size_t len, battery::Session::Handler handler) {
+void MockSession::read(char* buff, std::size_t len, codec::Session::Handler handler) {
 	std::size_t toRead = len;
 	std::size_t available = (availableToRead_ - bytesRead_);
 	if(len > available) {
@@ -32,7 +32,7 @@ void MockSession::read(char* buff, std::size_t len, battery::Session::Handler ha
 	bytesRead_ += toRead;
 }
 
-void MockSession::write(char* buff, std::size_t len, battery::Session::Handler handler) {
+void MockSession::write(char* buff, std::size_t len, codec::Session::Handler handler) {
 	std::size_t toRead = len;
 	std::size_t available = (availableToRead_ - bytesRead_);
 	if(len > available) {

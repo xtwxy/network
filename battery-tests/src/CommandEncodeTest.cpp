@@ -6,7 +6,7 @@
 
 #include "Command.h"
 
-BOOST_AUTO_TEST_SUITE(battery);
+BOOST_AUTO_TEST_SUITE(codec);
 
 
 BOOST_AUTO_TEST_CASE( battery_CommandEncodeTest  ) {
@@ -25,22 +25,22 @@ BOOST_AUTO_TEST_CASE( battery_CommandEncodeTest  ) {
 	std::size_t bytesWritten = 0;
 	std::size_t bytesRead = 0;
 
-	battery::Session::Handler readCompletion =
+	codec::Session::Handler readCompletion =
 			[] (const boost::system::error_code& ec,
 					std::size_t bytes_transfered) {
 		BOOST_ERROR("Read completion cannot be happen.");
 	};
 
-	battery::Session::Handler writeCompletion =
+	codec::Session::Handler writeCompletion =
 			[&writeBuffer] (const boost::system::error_code& ec,
 					std::size_t bytes_transfered) {
 		BOOST_CHECK_EQUAL( true, false );
 	};
 
-	battery::Session::Read read = [&readBuffer, &bytesRead] (
+	codec::Session::Read read = [&readBuffer, &bytesRead] (
 			char* buff,
 			std::size_t len,
-			battery::Session::Handler handler) {
+			codec::Session::Handler handler) {
 		std::size_t toRead = len;
 		std::size_t available = (sizeof(writeBuffer) - bytesRead);
 
@@ -61,10 +61,10 @@ BOOST_AUTO_TEST_CASE( battery_CommandEncodeTest  ) {
 		);
 	};
 
-	battery::Session::Write write = [&writeBuffer, &bytesWritten] (
+	codec::Session::Write write = [&writeBuffer, &bytesWritten] (
 			char* buff,
 			std::size_t len,
-			battery::Session::Handler handler) {
+			codec::Session::Handler handler) {
 		std::size_t toWrite = len;
 		std::size_t available = sizeof(writeBuffer);
 
@@ -85,13 +85,13 @@ BOOST_AUTO_TEST_CASE( battery_CommandEncodeTest  ) {
 		);
 	};
 
-	battery::Session::Close close = [] () {
+	codec::Session::Close close = [] () {
 		BOOST_ERROR("Close is not implemented.");
 	};
 
-	battery::Session::Ptr session(new battery::Session(read, write, close));
+	codec::Session::Ptr session(new codec::Session(read, write, close));
 
-	battery::Command::DataEncoder encoder = [] (
+	codec::Command::DataEncoder encoder = [] (
 			char * const buff,                        // Output writeBuffer
             std::size_t size,                         // Length of bytes encoded
             boost::endian::little_uint8_buf_t& addr,  // Addr
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE( battery_CommandEncodeTest  ) {
 		return true;
 	};
 
-	battery::Command::DataDecoder decoder = [] (
+	codec::Command::DataDecoder decoder = [] (
 			char * const buff,                        // Output writeBuffer
             std::size_t size,                         // Length of bytes encoded
             boost::endian::little_uint8_buf_t& addr,  // Addr
@@ -129,14 +129,14 @@ BOOST_AUTO_TEST_CASE( battery_CommandEncodeTest  ) {
 		return true;
 	};
 
-	battery::Command::CompletionHandler completionHandler = [](
+	codec::Command::CompletionHandler completionHandler = [](
 			const boost::system::error_code& ec) {
 		BOOST_CHECK( !ec );
 		BOOST_CHECK_EQUAL( true, false );
 	};
 
-	battery::Command::Ptr cmd(
-			new battery::Command(
+	codec::Command::Ptr cmd(
+			new codec::Command(
 				session,
 				encoder,
 				decoder,

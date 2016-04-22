@@ -7,7 +7,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-namespace battery {
+namespace codec {
 
 struct AnalogInputs {
  public:

@@ -16,8 +16,8 @@ public:
 			char* wrbuf, std::size_t wrbufSize);
 	virtual ~MockSession();
 
-	void read(char*, std::size_t, battery::Session::Handler);
-	void write(char*, std::size_t, battery::Session::Handler);
+	void read(char*, std::size_t, codec::Session::Handler);
+	void write(char*, std::size_t, codec::Session::Handler);
 	void readComplete(const boost::system::error_code&, std::size_t);
 	void writeComplete(const boost::system::error_code&, std::size_t);
 

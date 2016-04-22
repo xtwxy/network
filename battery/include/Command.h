@@ -17,7 +17,7 @@
 
 #include "Codec.h"
 
-namespace battery {
+namespace codec {
 
 class Session;
 
@@ -47,8 +47,10 @@ public boost::noncopyable {
   typedef boost::function<void (const boost::system::error_code&)> CompletionHandler;
   
   Command(SessionPtr session,
-          DataEncoder encoder,
-          DataDecoder decoder,
+          FrameEncoder frameEncoder,
+          DataEncoder dataEncoder,
+          FrameDecoder frameDecoder,
+          DataDecoder datadecoder,
           CompletionHandler handler);
   
   virtual ~Command();
@@ -57,17 +59,12 @@ public boost::noncopyable {
 
  private:
 
-  void readFrame();
-  void readComplete(const boost::system::error_code& ec,
-		  std::size_t bytes_transfered);
-
-  SessionPtr session_;
-  DataEncoder encoder_;
-  DataDecoder decoder_;
-  CompletionHandler handler_;
-  const std::size_t BUFFER_SIZE;
-  char * readBuffer_;
-  char * writeBuffer_;
+  SessionPtr session;
+  FrameEncoder encodeFrame;
+  DataEncoder encodeData;
+  FrameDecoder decodeFrame;
+  DataDecoder decodeData;
+  CompletionHandler complete;
 };
 
 } /* namespace battery */

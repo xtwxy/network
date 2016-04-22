@@ -3,6 +3,7 @@ include ../common/Makefile.def
 TARGET = codec$(EXE)
 
 SOURCES = \
+				src/Codec.cpp \
     src/main.cpp 
 
 INCLUDE += -Iinclude

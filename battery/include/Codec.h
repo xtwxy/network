@@ -17,7 +17,7 @@
 
 #include "Command.h"
 
-namespace battery {
+namespace codec {
 
 struct Header {
   Header() {
@@ -82,14 +82,38 @@ struct ClockData {
 	  boost::endian::little_uint32_buf_t secondsFromEpoch;
 };
 
+class Encoder;
+class Decoder;
+
+class Pipeline :private boost::noncopyable{
+public:
+	virtual ~Pipeline();
+
+	void addLast();
+private:
+	std::list<Encoder> encoders;
+	std::list<Decoder> decoders;
+};
+
+class Context {
+public:
+	Context(Pipeline& p);
+	virtual ~Context();
+
+	Pipeline& getPipeline();
+
+	void close();
+private:
+	Pipeline& pipeline;
+};
 
 class Session: public boost::enable_shared_from_this<Session>,
 		public boost::noncopyable {
 public:
 	typedef boost::shared_ptr<Session> Ptr;
-	typedef boost::function<void (const boost::system::error_code&, std::size_t)> Handler;
-	typedef boost::function<void (char*, std::size_t, Handler)> Read;
-	typedef boost::function<void (char*, std::size_t, Handler)> Write;
+	typedef boost::function<void (const boost::system::error_code&, std::size_t)> IoCompHandler;
+	typedef boost::function<void (char*, std::size_t, IoCompHandler)> Read;
+	typedef boost::function<void (char*, std::size_t, IoCompHandler)> Write;
 	typedef boost::function<void ()> Close;
 
 	Session(Read r, Write w, Close c);
@@ -101,47 +125,24 @@ public:
 	Close close;
 };
 
+class Codec : public boost::enable_shared_from_this<Codec> {
+public:
+	typedef boost::shared_ptr<Codec> Ptr;
+	typedef boost::shared_ptr<Context> ContextPtr;
+	Codec() {}
+	virtual ~Codec() { }
+
+	void sessionStart(Session::Ptr ssn) = 0;
+	void sessionClose(Session::Ptr ssn) = 0;
+	void exception(std::exception&) = 0;
+	void encode(Context ctx, boost::any toEncode, std::list<boost::any> out) = 0;
+	void decode(Context ctx, boost::any toEncode, std::list<boost::any> out) = 0;
+
+};
+
+
 
 uint16_t checksum(char* buff, std::size_t len);
-
-class Decoder : public boost::enable_shared_from_this<Decoder>,
-public boost::noncopyable {
-public:
-	typedef boost::shared_ptr<Decoder> Ptr;
-	typedef boost::function<
-			void (const boost::system::error_code&,
-					char*,
-					std::size_t)> CompletionHandler;
-	typedef boost::shared_ptr<Session> SessionPtr;
-
-	Decoder(SessionPtr session,
-			CompletionHandler handler,
-			std::size_t bufferSize = 512);
-	virtual ~Decoder();
-
-	void operator()();
-
-private:
-  void reset();
-  void decode();
-  void decodeHeader();
-  void decodeToTail();
-  void shiftReadBuffer(std::size_t offset);
-  void read();
-  void onReadComplete(
-			const boost::system::error_code& ec,
-			size_t bytes_transferred
-		);
-
-	SessionPtr session_;
-	CompletionHandler handler_;
-	std::size_t bytesRead_;
-	const std::size_t BUFFER_SIZE;
-	char* readBuffer_;
-  std::size_t bytesToRead_;
-  
-  boost::function<void ()> action_;
-};
 
 } /* namespace battery */
 

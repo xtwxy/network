@@ -4,11 +4,11 @@
 #include "BatteryAI.hpp"
 #include <random>
 
-BOOST_AUTO_TEST_SUITE(battery);
+BOOST_AUTO_TEST_SUITE(codec);
 
 BOOST_AUTO_TEST_CASE( battery_AnalogInputs_save_test  ) {
 
-  battery::AnalogInputs ai;
+  codec::AnalogInputs ai;
   
   std::default_random_engine generator;
   std::uniform_int_distribution<int> volts_distribution(2000,2500);

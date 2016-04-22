@@ -10,7 +10,7 @@ using namespace std;
 using namespace restbed;
 
 std::string get_ai(int measurer, int battery) {
-  battery::AnalogInputs ai;
+  codec::AnalogInputs ai;
 
   std::default_random_engine generator;
   std::uniform_int_distribution<int> volts_distribution(2000,2500);
