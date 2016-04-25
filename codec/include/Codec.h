@@ -9,6 +9,7 @@
 #define INCLUDE_CODEC_H_
 
 #include <list>
+#include <queue>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/noncopyable.hpp>
@@ -16,6 +17,7 @@
 #include <boost/function.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/any.hpp>
+#include <boost/tuple/tuple.hpp>
 
 namespace codec {
 
@@ -31,6 +33,9 @@ typedef boost::shared_ptr<Decoder> DecoderPtr;
 typedef boost::shared_ptr<Handler> HandlerPtr;
 typedef boost::shared_ptr<Context> ContextPtr;
 
+typedef boost::tuple<ContextPtr, EncoderPtr> EncoderContext;
+typedef boost::tuple<ContextPtr, DecoderPtr> DecoderContext;
+
 typedef boost::function<
 		void (Context&,
 				boost::any&,
@@ -45,14 +50,34 @@ typedef boost::function<
 		void (Context&,
 				boost::any&)> HandlerFunc;
 
+typedef boost::function<void ()> CompletionHandler;
+
+typedef boost::function<void (Context&)> SessionStart;
 typedef boost::function<void (Context&)> SessionClose;
 typedef boost::function<void (Context&, std::exception&)> ExceptionCaught;
 
-class Pipeline :private boost::noncopyable{
+class WriteRequest : public boost::enable_shared_from_this<WriteRequest>,
+private boost::noncopyable {
 public:
-	Pipeline(SessionPtr ssn);
-	virtual ~Pipeline();
+	typedef boost::shared_ptr<WriteRequest> Ptr;
+	typedef boost::function<void ()> CompleteAction;
+	WriteRequest();
+	WriteRequest(CompleteAction);
+	WriteRequest(WriteRequest::Ptr upperStreamCmd);
+	virtual ~WriteRequest();
 
+	void onComplete();
+
+private:
+	boost::any data;
+	CompleteAction action;
+};
+
+class PipelineImpl : public boost::enable_shared_from_this<PipelineImpl>,
+private boost::noncopyable {
+public:
+	PipelineImpl(SessionPtr ssn, const std::size_t bufferSize=1024);
+	virtual ~PipelineImpl();
 	void addLast(EncoderPtr encoder);
 	void addLast(DecoderPtr decoder);
 	void remove(EncoderPtr encoder);
@@ -61,10 +86,46 @@ public:
 	void close();
 	void start();
 private:
+	void onReadComplete(const boost::system::error_code&, std::size_t);
+	void onWriteComplete(const boost::system::error_code&, std::size_t);
+	void onTimeout(const boost::system::error_code& e);
+	void read();
+	void write();
+
+	void processSessionStart();
+	void processSessionClose();
+	void processExceptionCaught(const boost::system::error_code& ec);
+	void processDataArrive();
+	void processWriteComplete();
+	void processTimeout();
+
 	SessionPtr session;
-	std::list<EncoderPtr> encoders;
-	std::list<DecoderPtr> decoders;
+	std::list<EncoderContext> encoderContexts;
+	std::list<DecoderContext> decoderContexts;
 	HandlerPtr handler;
+	const std::size_t BUFFER_SIZE;
+	char* const readBuffer;
+	char* const writeBuffer;
+	std::size_t bytesRead;
+	std::size_t bytesToRead;
+	std::size_t bytesWritten;
+	std::size_t bytesToWrite;
+	std::queue<WriteRequest::Ptr> WriteRequestQueue;
+};
+
+class Pipeline :private boost::noncopyable {
+public:
+	Pipeline(SessionPtr ssn, const std::size_t bufferSize=1024);
+	virtual ~Pipeline();
+
+	void addLast(EncoderPtr encoder);
+	void addLast(DecoderPtr decoder);
+	void remove(EncoderPtr encoder);
+	void remove(DecoderPtr decoder);
+	void setHandler(HandlerPtr handler);
+	void close();
+private:
+	PipelineImpl impl;
 };
 
 typedef boost::function<void (Pipeline&)>PipelineInitializer;
@@ -76,6 +137,7 @@ public:
 
 	Pipeline& getPipeline();
 	void write(boost::any&);
+	void write(boost::any&, CompletionHandler);
 	void close();
 private:
 	Pipeline& pipeline;
@@ -85,11 +147,13 @@ class Encoder : public boost::enable_shared_from_this<Encoder>,
 private boost::noncopyable {
 public:
 	Encoder(const EncodeFunc,
+			const SessionStart,
 			const SessionClose,
 			const ExceptionCaught);
 	virtual ~Encoder();
 
 	const EncodeFunc encode;
+	const SessionStart sessionStart;
 	const SessionClose sessionClose;
 	const ExceptionCaught exceptionCaught;
 };
@@ -98,11 +162,13 @@ class Decoder : public boost::enable_shared_from_this<Decoder>,
 private boost::noncopyable {
 public:
 	Decoder(const DecodeFunc,
+			const SessionStart,
 			const SessionClose,
 			const ExceptionCaught);
 	virtual ~Decoder();
 
 	const DecodeFunc decode;
+	const SessionStart sessionStart;
 	const SessionClose sessionClose;
 	const ExceptionCaught exceptionCaught;
 };
@@ -111,11 +177,13 @@ class Handler : public boost::enable_shared_from_this<Handler>,
 private boost::noncopyable {
 public:
 	Handler(const HandlerFunc,
+			const SessionStart,
 			const SessionClose,
 			const ExceptionCaught);
 	virtual ~Handler();
 
 	const HandlerFunc handle;
+	const SessionStart sessionStart;
 	const SessionClose sessionClose;
 	const ExceptionCaught exceptionCaught;
 };
