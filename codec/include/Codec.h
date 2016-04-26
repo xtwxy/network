@@ -10,6 +10,7 @@
 
 #include <list>
 #include <queue>
+#include <array>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/noncopyable.hpp>
@@ -18,6 +19,7 @@
 #include <boost/system/error_code.hpp>
 #include <boost/any.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <boost/asio.hpp>
 
 namespace codec {
 
@@ -26,6 +28,7 @@ class Encoder;
 class Decoder;
 class Handler;
 class Context;
+class Pipeline;
 
 typedef boost::shared_ptr<Session> SessionPtr;
 typedef boost::shared_ptr<Encoder> EncoderPtr;
@@ -35,6 +38,7 @@ typedef boost::shared_ptr<Context> ContextPtr;
 
 typedef boost::tuple<ContextPtr, EncoderPtr> EncoderContext;
 typedef boost::tuple<ContextPtr, DecoderPtr> DecoderContext;
+typedef boost::tuple<ContextPtr, HandlerPtr> HandlerContext;
 
 typedef boost::function<
 		void (Context&,
@@ -54,7 +58,13 @@ typedef boost::function<void ()> CompletionHandler;
 
 typedef boost::function<void (Context&)> SessionStart;
 typedef boost::function<void (Context&)> SessionClose;
-typedef boost::function<void (Context&, std::exception&)> ExceptionCaught;
+typedef boost::function<void (Context&, const std::exception&)> ExceptionCaught;
+
+class TimeoutException : public std::exception {
+public:
+	TimeoutException();
+	virtual ~TimeoutException();
+};
 
 class WriteRequest : public boost::enable_shared_from_this<WriteRequest>,
 private boost::noncopyable {
@@ -68,7 +78,6 @@ public:
 
 	void onComplete();
 
-private:
 	boost::any data;
 	CompleteAction action;
 };
@@ -76,7 +85,7 @@ private:
 class PipelineImpl : public boost::enable_shared_from_this<PipelineImpl>,
 private boost::noncopyable {
 public:
-	PipelineImpl(SessionPtr ssn, const std::size_t bufferSize=1024);
+	PipelineImpl(Pipeline& p, SessionPtr ssn, const std::size_t bufferSize=1024);
 	virtual ~PipelineImpl();
 	void addLast(EncoderPtr encoder);
 	void addLast(DecoderPtr decoder);
@@ -96,21 +105,16 @@ private:
 	void processSessionClose();
 	void processExceptionCaught(const boost::system::error_code& ec);
 	void processDataArrive();
-	void processWriteComplete();
 	void processTimeout();
 
+	Pipeline& parent;
 	SessionPtr session;
 	std::list<EncoderContext> encoderContexts;
 	std::list<DecoderContext> decoderContexts;
-	HandlerPtr handler;
+	HandlerContext handlerContext;
 	const std::size_t BUFFER_SIZE;
-	char* const readBuffer;
-	char* const writeBuffer;
-	std::size_t bytesRead;
-	std::size_t bytesToRead;
-	std::size_t bytesWritten;
-	std::size_t bytesToWrite;
-	std::queue<WriteRequest::Ptr> WriteRequestQueue;
+	boost::asio::streambuf readBuffer;
+	std::queue<WriteRequest::Ptr> writeRequestQueue;
 };
 
 class Pipeline :private boost::noncopyable {
@@ -139,8 +143,10 @@ public:
 	void write(boost::any&);
 	void write(boost::any&, CompletionHandler);
 	void close();
+	std::list<boost::any>& getOut();
 private:
 	Pipeline& pipeline;
+	std::list<boost::any> out;
 };
 
 class Encoder : public boost::enable_shared_from_this<Encoder>,
@@ -191,10 +197,12 @@ public:
 class Session: public boost::enable_shared_from_this<Session>,
 		public boost::noncopyable {
 public:
+	typedef boost::asio::streambuf::mutable_buffers_type InBuffer;
+	typedef boost::asio::streambuf::const_buffers_type OutBuffer;
 	typedef boost::function<
 			void (const boost::system::error_code&, std::size_t)> IoCompHandler;
-	typedef boost::function<void (char*, std::size_t, IoCompHandler)> Read;
-	typedef boost::function<void (char*, std::size_t, IoCompHandler)> Write;
+	typedef boost::function<void (InBuffer, IoCompHandler)> Read;
+	typedef boost::function<void (OutBuffer, IoCompHandler)> Write;
 	typedef boost::function<void ()> Close;
 	typedef boost::function<void ()> Task;
 	typedef boost::function<void (Task)> Post;
