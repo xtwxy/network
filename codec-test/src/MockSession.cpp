@@ -32,7 +32,8 @@ SessionPtr MockSession::getSession() {
 }
 void MockSession::read(Session::ReadBuffer buffer,
 		Session::IoCompHandler handler) {
-	io_service.post([&buffer, &handler, this]() {
+    char buff[256];
+	io_service.post([&buff, &buffer, &handler, this]() {
 		  std::size_t destSize = boost::asio::detail::buffer_size_helper(buffer);
 
 		  Session::WriteBuffer src = this->buffer.data();
@@ -40,7 +41,7 @@ void MockSession::read(Session::ReadBuffer buffer,
 
 		  std::size_t len = (destSize > srcSize) ? srcSize : destSize;
 
-		  std::copy(src.begin(), src.begin(), buffer.begin());
+		  std::copy((char *)src.begin(), (char *)src.begin() + len, buff);
 
 		  handler(boost::system::error_code(
 				  	boost::system::errc::success,
