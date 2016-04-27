@@ -24,20 +24,17 @@
 namespace codec {
 
 class Session;
-class Encoder;
-class Decoder;
+class Codec;
 class Handler;
 class Context;
 class Pipeline;
 
 typedef boost::shared_ptr<Session> SessionPtr;
-typedef boost::shared_ptr<Encoder> EncoderPtr;
-typedef boost::shared_ptr<Decoder> DecoderPtr;
+typedef boost::shared_ptr<Codec> CodecPtr;
 typedef boost::shared_ptr<Handler> HandlerPtr;
 typedef boost::shared_ptr<Context> ContextPtr;
 
-typedef boost::tuple<ContextPtr, EncoderPtr> EncoderContext;
-typedef boost::tuple<ContextPtr, DecoderPtr> DecoderContext;
+typedef boost::tuple<ContextPtr, CodecPtr> CodecContext;
 typedef boost::tuple<ContextPtr, HandlerPtr> HandlerContext;
 
 typedef boost::function<
@@ -80,6 +77,8 @@ public:
 
 	boost::any data;
 	CompleteAction action;
+private:
+	WriteRequest::Ptr upperReq;
 };
 
 class PipelineImpl : public boost::enable_shared_from_this<PipelineImpl>,
@@ -87,10 +86,8 @@ private boost::noncopyable {
 public:
 	PipelineImpl(Pipeline& p, SessionPtr ssn, const std::size_t bufferSize=1024);
 	virtual ~PipelineImpl();
-	void addLast(EncoderPtr encoder);
-	void addLast(DecoderPtr decoder);
-	void remove(EncoderPtr encoder);
-	void remove(DecoderPtr decoder);
+	void addLast(CodecPtr encoder);
+	void remove(CodecPtr encoder);
 	void setHandler(HandlerPtr handler);
 	void close();
 	void start();
@@ -109,8 +106,7 @@ private:
 
 	Pipeline& parent;
 	SessionPtr session;
-	std::list<EncoderContext> encoderContexts;
-	std::list<DecoderContext> decoderContexts;
+	std::list<CodecContext> codecContexts;
 	HandlerContext handlerContext;
 	const std::size_t BUFFER_SIZE;
 	boost::asio::streambuf readBuffer;
@@ -122,10 +118,8 @@ public:
 	Pipeline(SessionPtr ssn, const std::size_t bufferSize=1024);
 	virtual ~Pipeline();
 
-	void addLast(EncoderPtr encoder);
-	void addLast(DecoderPtr decoder);
-	void remove(EncoderPtr encoder);
-	void remove(DecoderPtr decoder);
+	void addLast(CodecPtr codec);
+	void remove(CodecPtr codec);
 	void setHandler(HandlerPtr handler);
 	void close();
 private:
@@ -143,36 +137,23 @@ public:
 	void write(boost::any&);
 	void write(boost::any&, CompletionHandler);
 	void close();
-	std::list<boost::any>& getOut();
+	std::list<boost::any>& getOutputs();
 private:
 	Pipeline& pipeline;
-	std::list<boost::any> out;
+	std::list<boost::any> outputs;
 };
 
-class Encoder : public boost::enable_shared_from_this<Encoder>,
+class Codec : public boost::enable_shared_from_this<Codec>,
 private boost::noncopyable {
 public:
-	Encoder(const EncodeFunc,
+	Codec(const EncodeFunc,
+			const DecodeFunc,
 			const SessionStart,
 			const SessionClose,
 			const ExceptionCaught);
-	virtual ~Encoder();
+	virtual ~Codec();
 
 	const EncodeFunc encode;
-	const SessionStart sessionStart;
-	const SessionClose sessionClose;
-	const ExceptionCaught exceptionCaught;
-};
-
-class Decoder : public boost::enable_shared_from_this<Decoder>,
-private boost::noncopyable {
-public:
-	Decoder(const DecodeFunc,
-			const SessionStart,
-			const SessionClose,
-			const ExceptionCaught);
-	virtual ~Decoder();
-
 	const DecodeFunc decode;
 	const SessionStart sessionStart;
 	const SessionClose sessionClose;

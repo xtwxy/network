@@ -10,6 +10,31 @@
 
 namespace codec {
 
+TimeoutException::TimeoutException() {
+
+}
+
+TimeoutException::~TimeoutException() {
+
+}
+
+WriteRequest::WriteRequest() {
+
+}
+
+WriteRequest::WriteRequest(CompleteAction a) : action(a) {
+
+}
+
+WriteRequest::WriteRequest(WriteRequest::Ptr upperStreamReq) 
+  : upperReq(upperStreamReq) {
+
+}
+
+WriteRequest::~WriteRequest() {
+
+}
+
 PipelineImpl::PipelineImpl(Pipeline& p,
 		SessionPtr ssn, const std::size_t bufferSize) :
 	parent(p),
@@ -21,32 +46,17 @@ PipelineImpl::PipelineImpl(Pipeline& p,
 PipelineImpl::~PipelineImpl() {
 }
 
-void PipelineImpl::addLast(EncoderPtr encoder) {
+void PipelineImpl::addLast(CodecPtr codec) {
   ContextPtr ctx(new Context(parent));
-  EncoderContext encoderContext(ctx, encoder);
-  encoderContexts.push_back(encoderContext);
+  CodecContext codecContext(ctx, codec);
+  codecContexts.push_back(codecContext);
 }
 
-void PipelineImpl::addLast(DecoderPtr decoder) {
-  ContextPtr ctx(new Context(parent));
-  DecoderContext decoderContext(ctx, decoder);
-  decoderContexts.push_back(decoderContext);
-}
-
-void PipelineImpl::remove(EncoderPtr encoder) {
-  encoderContexts.erase(
-      std::remove_if(encoderContexts.begin(), encoderContexts.end(),
-                     [&encoder] (EncoderContext& encoderContext) {
-                     return (encoderContext.get<1>() == encoder);
-                     })
-      );
-}
-
-void PipelineImpl::remove(DecoderPtr decoder) {
-  decoderContexts.erase(
-      std::remove_if(decoderContexts.begin(), decoderContexts.end(),
-                     [&decoder] (DecoderContext& decoderContext) {
-                     return (decoderContext.get<1>() == decoder);
+void PipelineImpl::remove(CodecPtr codec) {
+	codecContexts.erase(
+      std::remove_if(codecContexts.begin(), codecContexts.end(),
+                     [&codec] (CodecContext& codecContext) {
+                     return (codecContext.get<1>() == codec);
                      })
       );
 }
@@ -137,37 +147,25 @@ void PipelineImpl::onTimeout(const boost::system::error_code& ec) {
 }
 
 void PipelineImpl::processSessionStart() {
-  std::for_each(decoderContexts.begin(), decoderContexts.end(),
-                [] (DecoderContext& decoderContext) {
-                decoderContext.get<1>()->sessionStart(*decoderContext.get<0>());
-                });
-  std::for_each(encoderContexts.begin(), encoderContexts.end(),
-                [] (EncoderContext& encoderContext) {
-                encoderContext.get<1>()->sessionStart(*encoderContext.get<0>());
+  std::for_each(codecContexts.begin(), codecContexts.end(),
+                [] (CodecContext& codecContext) {
+                codecContext.get<1>()->sessionStart(*codecContext.get<0>());
                 });
 }
 
 void PipelineImpl::processSessionClose() {
-	  std::for_each(decoderContexts.begin(), decoderContexts.end(),
-	                [] (DecoderContext& decoderContext) {
-	                decoderContext.get<1>()->sessionClose(*decoderContext.get<0>());
-	                });
-	  std::for_each(encoderContexts.begin(), encoderContexts.end(),
-	                [] (EncoderContext& encoderContext) {
-	                encoderContext.get<1>()->sessionClose(*encoderContext.get<0>());
+	  std::for_each(codecContexts.begin(), codecContexts.end(),
+	                [] (CodecContext& codecContext) {
+	                codecContext.get<1>()->sessionClose(*codecContext.get<0>());
 	                });
 }
 
 void PipelineImpl::processExceptionCaught(const boost::system::error_code& ec) {
 	//TODO: add error code to exception transformation.
 	std::exception ex;
-	  std::for_each(decoderContexts.begin(), decoderContexts.end(),
-	                [ex] (DecoderContext& decoderContext) {
-	                decoderContext.get<1>()->exceptionCaught(*decoderContext.get<0>(), ex);
-	                });
-	  std::for_each(encoderContexts.begin(), encoderContexts.end(),
-	                [ex] (EncoderContext& encoderContext) {
-	                encoderContext.get<1>()->exceptionCaught(*encoderContext.get<0>(), ex);
+	  std::for_each(codecContexts.begin(), codecContexts.end(),
+	                [ex] (CodecContext& codecContext) {
+	                codecContext.get<1>()->exceptionCaught(*codecContext.get<0>(), ex);
 	                });
 }
 
@@ -179,7 +177,7 @@ void PipelineImpl::processDataArrive() {
 	std::list<boost::any> out;
 
 	// call decoders.
-	for(auto dc = decoderContexts.begin(); dc != decoderContexts.end(); ++dc) {
+	for(auto dc = codecContexts.begin(); dc != codecContexts.end(); ++dc) {
 		for(auto it = in.begin(); it != in.end(); ++it) {
 			dc->get<1>()->decode(*dc->get<0>(),
 					*it,
@@ -193,12 +191,12 @@ void PipelineImpl::processDataArrive() {
 	}
 
 	// check possible write backs.
-	in = handlerContext.get<0>()->getOut();
+	in = handlerContext.get<0>()->getOutputs();
 	// call decoders.
-	for(auto dc = encoderContexts.begin(); dc != encoderContexts.end(); ++dc) {
+	for(auto dc = codecContexts.begin(); dc != codecContexts.end(); ++dc) {
 
-		in.insert(dc->get<0>()->getOut().begin(),
-				dc->get<0>()->getOut().end());
+		in.insert(dc->get<0>()->getOutputs().begin(),
+				dc->get<0>()->getOutputs().end());
 
 		for(auto it = in.begin(); it != in.end(); ++it) {
 			dc->get<1>()->encode(*dc->get<0>(),
@@ -212,23 +210,34 @@ void PipelineImpl::processDataArrive() {
 
 void PipelineImpl::processTimeout() {
 	TimeoutException ex;
-	  std::for_each(decoderContexts.begin(), decoderContexts.end(),
-	                [ex] (DecoderContext& decoderContext) {
-	                decoderContext.get<1>()->exceptionCaught(*decoderContext.get<0>(), ex);
-	                });
-	  std::for_each(encoderContexts.begin(), encoderContexts.end(),
-	                [ex] (EncoderContext& encoderContext) {
-	                encoderContext.get<1>()->exceptionCaught(*encoderContext.get<0>(), ex);
+	  std::for_each(codecContexts.begin(), codecContexts.end(),
+	                [ex] (CodecContext& codecContext) {
+	                codecContext.get<1>()->exceptionCaught(*codecContext.get<0>(), ex);
 	                });
 }
 
 
-Pipeline::Pipeline(SessionPtr ssn, const std::size_t bufferSize) :
-		impl(*this, ssn, bufferSize) {
-    }
+Pipeline::Pipeline(SessionPtr ssn, const std::size_t bufferSize)
+: impl(*this, ssn, bufferSize) {
+}
 
 Pipeline::~Pipeline() {
 }
+
+void Pipeline::addLast(CodecPtr codec) {
+	impl.addLast(codec);
+}
+
+void Pipeline::remove(CodecPtr codec) {
+	impl.remove(codec);
+}
+void Pipeline::setHandler(HandlerPtr handler) {
+	impl.setHandler(handler);
+}
+void Pipeline::close() {
+	impl.close();
+}
+
 
 Context::Context(Pipeline& p) : pipeline(p) {
 
@@ -250,23 +259,17 @@ void Context::close() {
   pipeline.close();
 }
 
-Encoder::Encoder(const EncodeFunc f, const SessionStart s, const SessionClose c,
-                 const ExceptionCaught e) :
-    encode(f), sessionStart(s), sessionClose(c), exceptionCaught(e) {
-
-    }
-
-Encoder::~Encoder() {
-
+std::list<boost::any>& Context::getOutputs() {
+	return outputs;
 }
 
-Decoder::Decoder(const EncodeFunc f, const SessionStart s, const SessionClose c,
+Codec::Codec(const EncodeFunc ef, DecodeFunc df, const SessionStart s, const SessionClose c,
                  const ExceptionCaught e) :
-    decode(f), sessionStart(s), sessionClose(c), exceptionCaught(e) {
+    encode(ef), decode(df), sessionStart(s), sessionClose(c), exceptionCaught(e) {
 
     }
 
-Decoder::~Decoder() {
+Codec::~Codec() {
 
 }
 
