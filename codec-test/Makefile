@@ -3,13 +3,17 @@ include ../common/Makefile.def
 TARGET = codec-test$(EXE)
 
 SOURCES = \
-    src/TestDataElement.cpp \
-    src/InitializerTest.cpp \
-    src/ValidatorTest.cpp \
-    src/ObserverTest.cpp \
-    src/PipelineTest.cpp \
+     src/MockSession.cpp \
+     src/PipelineTest.cpp \
+     src/SessionTest.cpp \
     ../codec/src/Codec.cpp \
     src/main.cpp
+
+#   src/TestDataElement.cpp \
+#   src/InitializerTest.cpp \
+#    src/ValidatorTest.cpp \
+#    src/ObserverTest.cpp \
+
 
 INCLUDE += -Iinclude -I../codec/include
 

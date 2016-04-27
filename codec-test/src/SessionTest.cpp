@@ -3,7 +3,7 @@
 
 #include "Codec.h"
 
-BOOST_AUTO_TEST_SUITE( PipelineTest )
+BOOST_AUTO_TEST_SUITE( SessionTest )
 
 BOOST_AUTO_TEST_CASE( testNoCodecs ) {
 }

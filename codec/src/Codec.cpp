@@ -18,7 +18,8 @@ TimeoutException::~TimeoutException() {
 
 }
 
-WriteRequest::WriteRequest() {
+WriteRequest::WriteRequest()
+: action([](){}){
 
 }
 
@@ -27,12 +28,22 @@ WriteRequest::WriteRequest(CompleteAction a) : action(a) {
 }
 
 WriteRequest::WriteRequest(WriteRequest::Ptr upperStreamReq) 
-  : upperReq(upperStreamReq) {
+  : action(upperStreamReq->action) {
 
 }
 
 WriteRequest::~WriteRequest() {
 
+}
+
+void WriteRequest::onComplete() {
+	if(action) {
+		action();
+	}
+}
+
+boost::any& WriteRequest::getData() {
+	return data;
 }
 
 PipelineImpl::PipelineImpl(Pipeline& p,
@@ -80,7 +91,7 @@ void PipelineImpl::read() {
 void PipelineImpl::write() {
 	// 2.start writing.
 	if (!writeRequestQueue.empty()) {
-		boost::any any = writeRequestQueue.front()->data;
+		boost::any& any = writeRequestQueue.front()->getData();
 		if(any.type() == typeid(boost::asio::streambuf*)) {
 			boost::asio::streambuf* buffer =
 					boost::any_cast<boost::asio::streambuf*>(any);
@@ -121,12 +132,12 @@ void PipelineImpl::onWriteComplete(
 		std::size_t bytesTransfered) {
 	if (!ec) {
 		if (!writeRequestQueue.empty()) {
-			boost::any any = writeRequestQueue.front()->data;
+			boost::any& any = writeRequestQueue.front()->getData();
 			if(any.type() == typeid(boost::asio::streambuf*)) {
 				boost::asio::streambuf* buffer =
 						boost::any_cast<boost::asio::streambuf*>(any);
 				buffer->consume(bytesTransfered);
-				writeRequestQueue.front()->action();
+				writeRequestQueue.front()->onComplete();
 			} else {
 				// invalid data!
 			}

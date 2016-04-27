@@ -1,5 +1,5 @@
-#ifndef INCLUDE_MOCK_SESSION_
-#define INCLUDE_MOCK_SESSION_
+#ifndef INCLUDE_MOCK_SESSION_IPP_
+#define INCLUDE_MOCK_SESSION_IPP_
 
 	codec::Session::Read read = [&readBuffer, &bytesRead] (
 			char* buff,
@@ -57,4 +57,4 @@
 		BOOST_ERROR("Close is not implemented.");
 	};
 
-#endif /* INCLUDE_MOCK_SESSION_ */
+#endif /* INCLUDE_MOCK_SESSION_IPP_ */

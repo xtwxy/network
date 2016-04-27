@@ -57,6 +57,8 @@ typedef boost::function<void (Context&)> SessionStart;
 typedef boost::function<void (Context&)> SessionClose;
 typedef boost::function<void (Context&, const std::exception&)> ExceptionCaught;
 
+typedef boost::function<void (Context&)> PipelineInitializer;
+
 class TimeoutException : public std::exception {
 public:
 	TimeoutException();
@@ -74,11 +76,10 @@ public:
 	virtual ~WriteRequest();
 
 	void onComplete();
-
+	boost::any& getData();
+private:
 	boost::any data;
 	CompleteAction action;
-private:
-	WriteRequest::Ptr upperReq;
 };
 
 class PipelineImpl : public boost::enable_shared_from_this<PipelineImpl>,
@@ -125,8 +126,6 @@ public:
 private:
 	PipelineImpl impl;
 };
-
-typedef boost::function<void (Pipeline&)>PipelineInitializer;
 
 class Context {
 public:
@@ -178,12 +177,12 @@ public:
 class Session: public boost::enable_shared_from_this<Session>,
 		public boost::noncopyable {
 public:
-	typedef boost::asio::streambuf::mutable_buffers_type InBuffer;
-	typedef boost::asio::streambuf::const_buffers_type OutBuffer;
+	typedef boost::asio::streambuf::mutable_buffers_type ReadBuffer;
+	typedef boost::asio::streambuf::const_buffers_type WriteBuffer;
 	typedef boost::function<
 			void (const boost::system::error_code&, std::size_t)> IoCompHandler;
-	typedef boost::function<void (InBuffer, IoCompHandler)> Read;
-	typedef boost::function<void (OutBuffer, IoCompHandler)> Write;
+	typedef boost::function<void (ReadBuffer, IoCompHandler)> Read;
+	typedef boost::function<void (WriteBuffer, IoCompHandler)> Write;
 	typedef boost::function<void ()> Close;
 	typedef boost::function<void ()> Task;
 	typedef boost::function<void (Task)> Post;
