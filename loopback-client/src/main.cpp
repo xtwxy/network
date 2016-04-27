@@ -7,8 +7,7 @@
 
 static int BUFFER_SIZE = 4096;
 
-char* readBuffer = NULL;//[BUFFER_SIZE];
-char* writeBuffer = NULL;//[BUFFER_SIZE];
+boost::asio::streambuf buffer;
 
 boost::asio::io_service ios;
 boost::asio::ip::tcp::resolver resolver(ios);
@@ -21,14 +20,14 @@ void onWriteComplete(const boost::system::error_code& ec,
 
 void read() {
 	sock.async_read_some(
-			boost::asio::buffer(readBuffer, BUFFER_SIZE),
+			buffer.prepare(BUFFER_SIZE),
 			onReadComplete
 	);
 }
 void write() {
 	async_write(
 			sock,
-			boost::asio::buffer(writeBuffer, BUFFER_SIZE),
+			buffer.data(),
 			onWriteComplete
 	);
 }
@@ -71,6 +70,7 @@ void resolve(std::string host, std::string port) {
 void onReadComplete(const boost::system::error_code& ec,
 		size_t bytes_transferred) {
 	if (!ec) {
+    buffer.commit(bytes_transferred);
 		read();
 	} else {
 		std::cerr << "onReadComplete(): " << ec << std::endl;
@@ -80,6 +80,7 @@ void onReadComplete(const boost::system::error_code& ec,
 void onWriteComplete(const boost::system::error_code& ec,
 		size_t bytes_transferred) {
 	if (!ec) {
+    buffer.consume(bytes_transferred);
 		write();
 	} else {
 		std::cerr << "onWriteComplete(): " << ec << std::endl;
@@ -95,16 +96,14 @@ int main(int argc, char* argv[]) {
 	} else if(argc == 4) {
 		BUFFER_SIZE = atoi(argv[3]);
 	}
-	readBuffer = new char[BUFFER_SIZE];
-	writeBuffer = new char[BUFFER_SIZE];
+
+  boost::asio::streambuf::mutable_buffers_type bufs = buffer.prepare(BUFFER_SIZE);
+  boost::asio::streambuf::mutable_buffers_type::const_iterator i = bufs.begin();
 	for(std::size_t i = 0; i != BUFFER_SIZE; ++i) {
-		readBuffer[i] = i;
-		writeBuffer[i]	= i;
 	}
-	resolve(argv[1], argv[2]);
+
 	ios.run();
-	delete[] readBuffer;
-	delete[] writeBuffer;
+
 
 	return EXIT_SUCCESS;
 }
