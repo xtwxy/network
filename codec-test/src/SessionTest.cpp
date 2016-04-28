@@ -65,8 +65,8 @@ BOOST_AUTO_TEST_CASE( testReadWrite ) {
 
 	BOOST_CHECK(std::equal(cdata, (cdata + csize), wbuff));
 
-
 	sb.consume(csize);
+	BOOST_CHECK_EQUAL(0, sb.size());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
