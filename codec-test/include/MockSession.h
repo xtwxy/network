@@ -13,6 +13,7 @@
 class MockSession : public boost::enable_shared_from_this<MockSession>,
 private boost::noncopyable {
 public:
+	typedef boost::shared_ptr<MockSession> Ptr;
 	MockSession();
 	virtual ~MockSession();
 
@@ -28,7 +29,7 @@ private:
 	void post(codec::Session::Task);
 
 	boost::asio::io_service io_service;
-	boost::asio::streambuf buffer;
+	boost::asio::streambuf echoBuffer;
 };
 
 #endif /* INCLUDE_MOCKSESSION_H_ */
