@@ -25,11 +25,26 @@ void read() {
 	);
 }
 void write() {
-	async_write(
-			sock,
-			buffer.data(),
-			onWriteComplete
-	);
+    if(buffer.size() == 0) {
+        std::ostream os(&buffer);
+        os << "Hello, World!\n";
+
+        boost::asio::mutable_buffer b;
+        std::size_t size = boost::asio::detail::buffer_size_helper(b);
+        void * data = boost::asio::detail::buffer_cast_helper(b);
+      async_write(
+          sock,
+          buffer.data(),
+          onWriteComplete
+          );
+
+    } else {
+      async_write(
+          sock,
+          buffer.data(),
+          onWriteComplete
+          );
+	}
 }
 
 void onConnectComplete(
@@ -90,17 +105,14 @@ void onWriteComplete(const boost::system::error_code& ec,
 int main(int argc, char* argv[]) {
 	if(argc < 3) {
 		std::cerr << "Usage:\n"
-			<< argv[0] << "<host> <port>"
+			<< argv[0] << " <host> <port>"
 			<< std::endl; 
 			return EXIT_FAILURE;
 	} else if(argc == 4) {
 		BUFFER_SIZE = atoi(argv[3]);
 	}
 
-  boost::asio::streambuf::mutable_buffers_type bufs = buffer.prepare(BUFFER_SIZE);
-  boost::asio::streambuf::mutable_buffers_type::const_iterator i = bufs.begin();
-	for(std::size_t i = 0; i != BUFFER_SIZE; ++i) {
-	}
+    resolve(argv[1], argv[2]);
 
 	ios.run();
 

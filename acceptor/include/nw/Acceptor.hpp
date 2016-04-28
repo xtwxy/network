@@ -45,8 +45,10 @@ public:
 		 bytesRead(0) { }
 	virtual ~Connection() {
 		std::cerr << "Connection::~Connection()" << std::endl;
-		socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
-		socket_.close();
+		try {
+			socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+		} catch(...) { }
+		try { socket_.close(); } catch(...) { }
 		delete[] readBuffer_;
 		delete[] writeBuffer_;
 	}
