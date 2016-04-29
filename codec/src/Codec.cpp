@@ -18,17 +18,17 @@ TimeoutException::~TimeoutException() {
 
 }
 
-WriteRequest::WriteRequest()
-: action([](){}){
+WriteRequest::WriteRequest(boost::any& data)
+: data(data), action([](){}){
 
 }
 
-WriteRequest::WriteRequest(CompleteAction a) : action(a) {
+WriteRequest::WriteRequest(boost::any& data, CompletionHandler a) : data(data), action(a) {
 
 }
 
-WriteRequest::WriteRequest(WriteRequest::Ptr upperStreamReq) 
-  : action(upperStreamReq->action) {
+WriteRequest::WriteRequest(boost::any& data, WriteRequest::Ptr upperStreamReq)
+  : data(data), action(upperStreamReq->action) {
 
 }
 
@@ -77,6 +77,24 @@ void PipelineImpl::setHandler(HandlerPtr handler) {
   this->handlerContext = HandlerContext(ctx, handler);
 }
 
+void PipelineImpl::write(boost::any& output) {
+	std::list<boost::any> in;
+
+	in.push_back(output);
+
+	std::list<boost::any> out;
+
+	for(auto dc = codecContexts.begin(); dc != codecContexts.end(); ++dc) {
+		for(auto it = in.begin(); it != in.end(); ++it) {
+			dc->get<1>()->encode(*dc->get<0>(),
+					*it,
+					out);
+		}
+		in = out;
+	}
+	enqueueWriteRequest(in);
+}
+
 void PipelineImpl::close() {
   session->close();
 }
@@ -88,7 +106,7 @@ void PipelineImpl::read() {
 					_2));
 }
 
-void PipelineImpl::write() {
+void PipelineImpl::dequeueWriteRequest() {
 	// 2.start writing.
 	if (!writeRequestQueue.empty()) {
 		boost::any& any = writeRequestQueue.front()->getData();
@@ -105,6 +123,18 @@ void PipelineImpl::write() {
 		// nothing to write!
 	}
 
+}
+
+void PipelineImpl::enqueueWriteRequest(std::list<boost::any>& out) {
+	boost::mutex::scoped_lock lock(mutex);
+	for(auto it = out.begin(); it != out.end(); ++it) {
+		WriteRequest::Ptr request(new WriteRequest(*it));
+		writeRequestQueue.push(request);
+	}
+}
+
+void PipelineImpl::enqueueWriteRequest(std::list<boost::any>& out, CompletionHandler) {
+	assert(false);
 }
 
 void PipelineImpl::start() {
@@ -142,6 +172,7 @@ void PipelineImpl::onWriteComplete(
 				// invalid data!
 			}
 			writeRequestQueue.pop();
+			dequeueWriteRequest();
 		} else {
 			// nothing to write!
 		}
@@ -216,7 +247,7 @@ void PipelineImpl::processDataArrive() {
 		}
 		in = out;
 	}
-
+	enqueueWriteRequest(out);
 }
 
 void PipelineImpl::processTimeout() {
@@ -242,9 +273,15 @@ void Pipeline::addLast(CodecPtr codec) {
 void Pipeline::remove(CodecPtr codec) {
 	impl.remove(codec);
 }
+
 void Pipeline::setHandler(HandlerPtr handler) {
 	impl.setHandler(handler);
 }
+
+void Pipeline::write(boost::any& out) {
+	impl.write(out);
+}
+
 void Pipeline::close() {
 	impl.close();
 }
@@ -262,8 +299,8 @@ Pipeline& Context::getPipeline() {
   return pipeline;
 }
 
-void Context::write(boost::any&) {
-
+void Context::write(boost::any& output) {
+	outputs.push_back(output);
 }
 
 void Context::close() {

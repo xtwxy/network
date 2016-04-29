@@ -4,6 +4,7 @@ TARGET = codec-test$(EXE)
 
 SOURCES = \
      src/MockSession.cpp \
+     src/MockTrivialCodec.cpp \
      src/PipelineTest.cpp \
      src/SessionTest.cpp \
     ../codec/src/Codec.cpp \

@@ -20,6 +20,7 @@
 #include <boost/any.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/asio.hpp>
+#include <boost/thread/mutex.hpp>
 
 namespace codec {
 
@@ -57,7 +58,7 @@ typedef boost::function<void (Context&)> SessionStart;
 typedef boost::function<void (Context&)> SessionClose;
 typedef boost::function<void (Context&, const std::exception&)> ExceptionCaught;
 
-typedef boost::function<void (Context&)> PipelineInitializer;
+typedef boost::function<void (Pipeline&)> PipelineInitializer;
 
 class TimeoutException : public std::exception {
 public:
@@ -69,17 +70,16 @@ class WriteRequest : public boost::enable_shared_from_this<WriteRequest>,
 private boost::noncopyable {
 public:
 	typedef boost::shared_ptr<WriteRequest> Ptr;
-	typedef boost::function<void ()> CompleteAction;
-	WriteRequest();
-	WriteRequest(CompleteAction);
-	WriteRequest(WriteRequest::Ptr upperStreamCmd);
+	WriteRequest(boost::any& data);
+	WriteRequest(boost::any& data, CompletionHandler);
+	WriteRequest(boost::any& data, WriteRequest::Ptr upperStreamCmd);
 	virtual ~WriteRequest();
 
 	void onComplete();
 	boost::any& getData();
 private:
 	boost::any data;
-	CompleteAction action;
+	CompletionHandler action;
 };
 
 class PipelineImpl : public boost::enable_shared_from_this<PipelineImpl>,
@@ -90,6 +90,8 @@ public:
 	void addLast(CodecPtr encoder);
 	void remove(CodecPtr encoder);
 	void setHandler(HandlerPtr handler);
+	void write(boost::any&);
+	void write(boost::any&, CompletionHandler);
 	void close();
 	void start();
 private:
@@ -97,7 +99,9 @@ private:
 	void onWriteComplete(const boost::system::error_code&, std::size_t);
 	void onTimeout(const boost::system::error_code& e);
 	void read();
-	void write();
+	void dequeueWriteRequest();
+	void enqueueWriteRequest(std::list<boost::any>&);
+	void enqueueWriteRequest(std::list<boost::any>&, CompletionHandler);
 
 	void processSessionStart();
 	void processSessionClose();
@@ -112,6 +116,7 @@ private:
 	const std::size_t BUFFER_SIZE;
 	boost::asio::streambuf readBuffer;
 	std::queue<WriteRequest::Ptr> writeRequestQueue;
+	boost::mutex mutex;
 };
 
 class Pipeline :private boost::noncopyable {
@@ -119,9 +124,11 @@ public:
 	Pipeline(SessionPtr ssn, const std::size_t bufferSize=1024);
 	virtual ~Pipeline();
 
-	void addLast(CodecPtr codec);
-	void remove(CodecPtr codec);
+	void addLast(CodecPtr encoder);
+	void remove(CodecPtr encoder);
 	void setHandler(HandlerPtr handler);
+	void write(boost::any&);
+	void write(boost::any&, CompletionHandler);
 	void close();
 private:
 	PipelineImpl impl;

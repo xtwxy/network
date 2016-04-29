@@ -25,5 +25,17 @@ int main(int argc, char* argv[]) {
   std::cout << "typeid(std::vector<char>).name() == " << typeid(std::vector<char>).name() << std::endl;
   std::cout << "(data.type() == typeid(std::vector<char>)) == " << (data.type() == typeid(std::vector<char>)) << std::endl;
 
+  boost::any ldata = data;
+
+  std::cout << "data.type().name() == " << data.type().name() << std::endl;
+  std::cout << "typeid(std::vector<char>).name() == " << typeid(std::vector<char>).name() << std::endl;
+  std::cout << "(data.type() == typeid(std::vector<char>)) == " << (data.type() == typeid(std::vector<char>)) << std::endl;
+  std::cout << "boost::any_cast<std::vector<char> >(data).size() = " << boost::any_cast<std::vector<char> >(data).size() << std::endl;
+
+  std::cout << "ldata.type().name() == " << ldata.type().name() << std::endl;
+  std::cout << "typeid(std::vector<char>).name() == " << typeid(std::vector<char>).name() << std::endl;
+  std::cout << "(ldata.type() == typeid(std::vector<char>)) == " << (ldata.type() == typeid(std::vector<char>)) << std::endl;
+  std::cout << "boost::any_cast<std::vector<char> >(ldata).size() = " << boost::any_cast<std::vector<char> >(ldata).size() << std::endl;
+
   return EXIT_SUCCESS;
 }
