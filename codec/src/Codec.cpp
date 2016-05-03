@@ -51,7 +51,7 @@ PipelineImpl::PipelineImpl(boost::asio::io_service& ioService, Pipeline& p,
                            SessionPtr ssn) :
     parent(p), session(ssn), BUFFER_SIZE(4096), readBuffer(), ioService(
         ioService), READ_TIMEOUT_SECS(30), WRITE_TIMEOUT_SECS(30),
-		readTimer(ioService), writeTimer(ioService) {
+		readTimer(ioService), writeTimer(ioService), sessionClosed(false) {
     }
 
 PipelineImpl::~PipelineImpl() {
@@ -84,11 +84,11 @@ void PipelineImpl::write(boost::any& output) {
 
   std::list<boost::any> out;
 
-  for (auto dc = codecContexts.begin(); dc != codecContexts.end(); ++dc) {
+  for (auto dc = codecContexts.rbegin(); dc != codecContexts.rend(); ++dc) {
     for (auto it = in.begin(); it != in.end(); ++it) {
       dc->get<1>()->encode(*dc->get<0>(), *it, out);
     }
-    in = out;
+    in = out;out.clear();
   }
   enqueueWriteRequest(in);
 }
@@ -123,7 +123,7 @@ void PipelineImpl::read() {
 void PipelineImpl::dequeueWriteRequest() {
   // 2.start writing.
   //boost::mutex::scoped_lock lock(mutex);
-  if (!writeRequestQueue.empty()) {
+  if (!sessionClosed && !writeRequestQueue.empty()) {
     boost::any& any = writeRequestQueue.front()->getData();
     if (any.type() == typeid(boost::asio::streambuf*)) {
       boost::asio::streambuf* buffer = boost::any_cast<
@@ -136,16 +136,18 @@ void PipelineImpl::dequeueWriteRequest() {
     }
   } else {
     // nothing to write!
-	waitWriteRequest();
+	if(!sessionClosed)waitWriteRequest();
   }
 
 }
 
 void PipelineImpl::enqueueWriteRequest(std::list<boost::any>& out) {
-  for (auto it = out.begin(); it != out.end(); ++it) {
-    WriteRequest::Ptr request(new WriteRequest(*it));
-    writeRequestQueue.push(request);
-  }
+	if(!sessionClosed) {
+	  for (auto it = out.begin(); it != out.end(); ++it) {
+		WriteRequest::Ptr request(new WriteRequest(*it));
+		writeRequestQueue.push(request);
+	  }
+	}
   // notifiy sender.
   if (!out.empty()) {
 	  notifyWriter();
@@ -192,6 +194,11 @@ void PipelineImpl::onReadComplete(const boost::system::error_code& ec,
 		processDataArrive();
 	  }
 	  read();
+  } else if (ec.value() == boost::asio::error::broken_pipe
+		  || boost::asio::error::connection_reset
+		  || boost::asio::error::connection_aborted) {
+	  sessionClosed = true;
+	  processSessionClose();
   } else {
     processExceptionCaught(ec);
   }
@@ -216,6 +223,11 @@ void PipelineImpl::onWriteComplete(const boost::system::error_code& ec,
     } else {
       // nothing to write!
     }
+  } else if (ec.value() == boost::asio::error::broken_pipe
+		  || boost::asio::error::connection_reset
+		  || boost::asio::error::connection_aborted) {
+	  sessionClosed = true;
+	  processSessionClose();
   } else {
     processExceptionCaught(ec);
   }
@@ -248,9 +260,13 @@ void PipelineImpl::processSessionStart() {
   handlerContext.get<1>()->sessionStart(
 		  *handlerContext.get<0>()
 		  );
+
+  writeBackContextQueues();
 }
 
 void PipelineImpl::processSessionClose() {
+	readTimer.cancel();
+	writeTimer.cancel();
   std::for_each(codecContexts.begin(), codecContexts.end(),
                 [] (CodecContext& codecContext) {
                 codecContext.get<1>()->sessionClose(*codecContext.get<0>());
@@ -273,6 +289,27 @@ void PipelineImpl::processExceptionCaught(const boost::system::error_code& ec) {
 		  );
 }
 
+void PipelineImpl::writeBackContextQueues() {
+	  std::list<boost::any> in;
+	  std::list<boost::any> out;
+
+	// check possible write backs.
+	in = handlerContext.get<0>()->getOutputs();
+	handlerContext.get<0>()->getOutputs().clear();
+	// call decoders.
+	for (auto dc = codecContexts.rbegin(); dc != codecContexts.rend(); ++dc) {
+		in.insert(dc->get<0>()->getOutputs().begin(),
+				dc->get<0>()->getOutputs().end());
+		dc->get<0>()->getOutputs().clear();
+		for (auto it = in.begin(); it != in.end(); ++it) {
+			dc->get<1>()->encode(*dc->get<0>(), *it, out);
+		}
+		in = out;
+		out.clear();
+	}
+	enqueueWriteRequest(out);
+}
+
 void PipelineImpl::processDataArrive() {
   std::list<boost::any> in;
 
@@ -286,26 +323,15 @@ void PipelineImpl::processDataArrive() {
       dc->get<1>()->decode(*dc->get<0>(), *it, out);
     }
     in = out;
+    out.clear();
   }
   // call handlers.
-  for (auto it = out.begin(); it != out.end(); ++it) {
+  for (auto it = in.begin(); it != in.end(); ++it) {
     handlerContext.get<1>()->handle(*handlerContext.get<0>(), *it);
   }
 
   // check possible write backs.
-  in = handlerContext.get<0>()->getOutputs();
-  // call decoders.
-  for (auto dc = codecContexts.begin(); dc != codecContexts.end(); ++dc) {
-
-    in.insert(dc->get<0>()->getOutputs().begin(),
-              dc->get<0>()->getOutputs().end());
-
-    for (auto it = in.begin(); it != in.end(); ++it) {
-      dc->get<1>()->encode(*dc->get<0>(), *it, out);
-    }
-    in = out;
-  }
-  enqueueWriteRequest(out);
+	writeBackContextQueues();
 }
 
 void PipelineImpl::processTimeout() {

@@ -68,10 +68,10 @@ BOOST_AUTO_TEST_CASE( testCodec ) {
 		BOOST_CHECK_EQUAL(sessionStartCalled, true);
 	});
 	layer1->checkSessionCloseCalled([](bool sessionCloseCalled) {
-		BOOST_CHECK_EQUAL(sessionCloseCalled, false);
+		BOOST_CHECK_EQUAL(sessionCloseCalled, true);
 	});
 	layer1->checkExceptionCaughtCalled([](bool exceptionCaughtCalled) {
-		BOOST_CHECK_EQUAL(exceptionCaughtCalled, true);
+		BOOST_CHECK_EQUAL(exceptionCaughtCalled, false);
 	});
 
 	layer2->checkEncodeCalled([](bool encodeCalled) {
@@ -84,10 +84,10 @@ BOOST_AUTO_TEST_CASE( testCodec ) {
 		BOOST_CHECK_EQUAL(sessionStartCalled, true);
 	});
 	layer2->checkSessionCloseCalled([](bool sessionCloseCalled) {
-		BOOST_CHECK_EQUAL(sessionCloseCalled, false);
+		BOOST_CHECK_EQUAL(sessionCloseCalled, true);
 	});
 	layer2->checkExceptionCaughtCalled([](bool exceptionCaughtCalled) {
-		BOOST_CHECK_EQUAL(exceptionCaughtCalled, true);
+		BOOST_CHECK_EQUAL(exceptionCaughtCalled, false);
 	});
 
 	mockHandler->checkHandleCalled([](bool handleCalled) {
@@ -97,10 +97,10 @@ BOOST_AUTO_TEST_CASE( testCodec ) {
 		BOOST_CHECK_EQUAL(sessionStartCalled, true);
 	});
 	mockHandler->checkSessionCloseCalled([](bool sessionCloseCalled) {
-		BOOST_CHECK_EQUAL(sessionCloseCalled, false);
+		BOOST_CHECK_EQUAL(sessionCloseCalled, true);
 	});
 	mockHandler->checkExceptionCaughtCalled([](bool exceptionCaughtCalled) {
-		BOOST_CHECK_EQUAL(exceptionCaughtCalled, true);
+		BOOST_CHECK_EQUAL(exceptionCaughtCalled, false);
 	});
 
 }

@@ -65,11 +65,21 @@ CodecPtr MockTrivialCodec::getCodec() {
 }
 
 void MockTrivialCodec::encode(Context& ctx, boost::any& input, std::list<boost::any>& output) {
-	output.push_back(input);
+	  boost::asio::streambuf* psb = boost::any_cast<boost::asio::streambuf*>(input);
+	  std::size_t len = psb->size();
+
+	  std::cout << "encode(): psb->size() = " << len << std::endl;
+
+	  output.push_back(input);
 	encodeCalled = true;
 }
 
 void MockTrivialCodec::decode(Context& ctx, boost::any& input, std::list<boost::any>& output) {
+	  boost::asio::streambuf* psb = boost::any_cast<boost::asio::streambuf*>(input);
+	  std::size_t len = psb->size();
+
+	  std::cout << "decode(): psb->size() = " << len << std::endl;
+
 	output.push_back(input);
 	decodeCalled = true;
 }

@@ -118,6 +118,7 @@ private:
 	void processExceptionCaught(const boost::system::error_code& ec);
 	void processDataArrive();
 	void processTimeout();
+	void writeBackContextQueues();
 
 	Pipeline& parent;
 	SessionPtr session;
@@ -132,6 +133,7 @@ private:
 	std::queue<WriteRequest::Ptr> writeRequestQueue;
 	boost::mutex mutex;
 	boost::asio::io_service& ioService;
+	bool sessionClosed;
 };
 
 class Pipeline :private boost::noncopyable {
