@@ -25,7 +25,7 @@ void MockHandler::handle(Context& ctx,	boost::any& data){
   boost::asio::streambuf* psb = boost::any_cast<boost::asio::streambuf*>(data);
   std::size_t len = psb->size();
 
-  std::cout << "handle(): psb->size() = " << len << std::endl;
+  std::cout << this << " handle(): psb->size() = " << len << std::endl;
 
   char * buff = new char[len];
   std::istream is(psb);
