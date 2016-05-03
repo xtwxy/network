@@ -24,7 +24,7 @@ MockTrivialCodec::~MockTrivialCodec() {
 
 }
 
-CodecPtr MockTrivialCodec::getCodec() {
+CodecPtr MockTrivialCodec::createCodec() {
 	Ptr codec = boost::make_shared<MockTrivialCodec>();
 	EncodeFunc encoder = boost::bind(&MockTrivialCodec::encode, codec,
 			_1, _2,	_3);
@@ -38,6 +38,26 @@ CodecPtr MockTrivialCodec::getCodec() {
 
 	ExceptionCaught exceptCaught = boost::bind(
 			&MockTrivialCodec::exceptionCaught, codec, _1, _2);
+
+	CodecPtr ptr(new Codec(encoder, decoder, ssnStart, ssnClose, exceptCaught));
+
+	return ptr;
+}
+
+
+CodecPtr MockTrivialCodec::getCodec() {
+	EncodeFunc encoder = boost::bind(&MockTrivialCodec::encode, shared_from_this(),
+			_1, _2,	_3);
+	EncodeFunc decoder = boost::bind(&MockTrivialCodec::decode, shared_from_this(),
+			_1, _2,	_3);
+
+	SessionStart ssnStart = boost::bind(&MockTrivialCodec::sessionStart, shared_from_this(),
+			_1);
+	SessionClose ssnClose = boost::bind(&MockTrivialCodec::sessionClose, shared_from_this(),
+			_1);
+
+	ExceptionCaught exceptCaught = boost::bind(
+			&MockTrivialCodec::exceptionCaught, shared_from_this(), _1, _2);
 
 	CodecPtr ptr(new Codec(encoder, decoder, ssnStart, ssnClose, exceptCaught));
 

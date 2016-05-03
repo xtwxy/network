@@ -19,7 +19,8 @@ public:
 	MockTrivialCodec();
 	virtual ~MockTrivialCodec();
 
-	static CodecPtr getCodec();
+	static CodecPtr createCodec();
+	CodecPtr getCodec();
 	void encode(Context&, boost::any&, std::list<boost::any>&);
 	void decode(Context&, boost::any&, std::list<boost::any>&);
 	void sessionStart(Context&);
