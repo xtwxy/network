@@ -86,12 +86,24 @@ void MockTrivialCodec::exceptionCaught(Context& ctx, const std::exception& ex) {
 	exceptionCaughtCalled = true;
 }
 
-void MockTrivialCodec::checkPostCondition() {
-	BOOST_CHECK_EQUAL(encodeCalled, true);
-	BOOST_CHECK_EQUAL(decodeCalled, true);
-	BOOST_CHECK_EQUAL(sessionStartCalled, true);
-	BOOST_CHECK_EQUAL(sessionCloseCalled, true);
-	BOOST_CHECK_EQUAL(exceptionCaughtCalled, true);
+void MockTrivialCodec::checkEncodeCalled(boost::function<void (bool)> check) {
+	check(encodeCalled);
+}
+
+void MockTrivialCodec::checkDecodeCalled(boost::function<void (bool)> check) {
+	check(decodeCalled);
+}
+
+void MockTrivialCodec::checkSessionStartCalled(boost::function<void (bool)> check) {
+	check(sessionStartCalled);
+}
+
+void MockTrivialCodec::checkSessionCloseCalled(boost::function<void (bool)> check) {
+	check(sessionCloseCalled);
+}
+
+void MockTrivialCodec::checkExceptionCaughtCalled(boost::function<void (bool)> check) {
+	check(exceptionCaughtCalled);
 }
 
 } /* namespace codec */

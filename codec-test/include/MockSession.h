@@ -19,7 +19,7 @@ public:
 
 	codec::SessionPtr getSession();
 	void close();
-
+	boost::asio::io_service& getIoService();
 	void run();
 private:
 	void read(codec::Session::ReadBuffer,
@@ -28,8 +28,11 @@ private:
 			codec::Session::IoCompHandler);
 	void post(codec::Session::Task);
 
+	bool isClosed();
+
 	boost::asio::io_service io_service;
 	boost::asio::streambuf echoBuffer;
+	bool closed;
 };
 
 #endif /* INCLUDE_MOCKSESSION_H_ */

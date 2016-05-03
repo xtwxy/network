@@ -27,7 +27,11 @@ public:
 	void sessionClose(Context&);
 	void exceptionCaught(Context&, const std::exception&);
 
-	void checkPostCondition();
+	void checkEncodeCalled(boost::function<void (bool)> check);
+	void checkDecodeCalled(boost::function<void (bool)> check);
+	void checkSessionStartCalled(boost::function<void (bool)> check);
+	void checkSessionCloseCalled(boost::function<void (bool)> check);
+	void checkExceptionCaughtCalled(boost::function<void (bool)> check);
 private:
 	bool encodeCalled;
 	bool decodeCalled;

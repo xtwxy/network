@@ -20,6 +20,7 @@
 #include <boost/any.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/asio.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread/mutex.hpp>
 
 namespace codec {
@@ -85,23 +86,32 @@ private:
 class PipelineImpl : public boost::enable_shared_from_this<PipelineImpl>,
 private boost::noncopyable {
 public:
-	PipelineImpl(Pipeline& p, SessionPtr ssn, const std::size_t bufferSize=1024);
+	PipelineImpl(boost::asio::io_service& ioService, Pipeline& p, SessionPtr ssn);
 	virtual ~PipelineImpl();
 	void addLast(CodecPtr encoder);
 	void remove(CodecPtr encoder);
 	void setHandler(HandlerPtr handler);
 	void write(boost::any&);
 	void write(boost::any&, CompletionHandler);
+	void setBufferSize(std::size_t bufferSize);
+	void setReadTimeout(std::size_t seconds);
+	void setWriteTimeout(std::size_t seconds);
 	void close();
+	boost::asio::io_service& getIoService();
 	void start();
 private:
 	void onReadComplete(const boost::system::error_code&, std::size_t);
 	void onWriteComplete(const boost::system::error_code&, std::size_t);
-	void onTimeout(const boost::system::error_code& e);
+	void onReaderTimeout(const boost::system::error_code& e);
+	void onWriterTimeout(const boost::system::error_code& e);
 	void read();
 	void dequeueWriteRequest();
 	void enqueueWriteRequest(std::list<boost::any>&);
 	void enqueueWriteRequest(std::list<boost::any>&, CompletionHandler);
+	void waitWriteRequest();
+	void waitReadResponse();
+	void notifyWriter();
+	void notifyReader();
 
 	void processSessionStart();
 	void processSessionClose();
@@ -113,15 +123,20 @@ private:
 	SessionPtr session;
 	std::list<CodecContext> codecContexts;
 	HandlerContext handlerContext;
-	const std::size_t BUFFER_SIZE;
+	std::size_t BUFFER_SIZE;
+	std::size_t READ_TIMEOUT_SECS;
+	std::size_t WRITE_TIMEOUT_SECS;
+	boost::asio::deadline_timer readTimer;
+	boost::asio::deadline_timer writeTimer;
 	boost::asio::streambuf readBuffer;
 	std::queue<WriteRequest::Ptr> writeRequestQueue;
 	boost::mutex mutex;
+	boost::asio::io_service& ioService;
 };
 
 class Pipeline :private boost::noncopyable {
 public:
-	Pipeline(SessionPtr ssn, const std::size_t bufferSize=1024);
+	Pipeline(boost::asio::io_service& ioService, SessionPtr ssn);
 	virtual ~Pipeline();
 
 	void addLast(CodecPtr encoder);
@@ -129,7 +144,12 @@ public:
 	void setHandler(HandlerPtr handler);
 	void write(boost::any&);
 	void write(boost::any&, CompletionHandler);
+	void setBufferSize(std::size_t bufferSize);
+	void setReadTimeout(std::size_t seconds);
+	void setWriteTimeout(std::size_t seconds);
 	void close();
+	boost::asio::io_service& getIoService();
+	void start();
 private:
 	PipelineImpl impl;
 };

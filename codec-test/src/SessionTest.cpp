@@ -11,9 +11,9 @@ using namespace boost::asio;
 
 BOOST_AUTO_TEST_SUITE( SessionTest )
 
-MockSession::Ptr mockSession(new MockSession());
 
 BOOST_AUTO_TEST_CASE( testReadWrite ) {
+	MockSession::Ptr mockSession(new MockSession());
 
 	bool readComplete = false;
 	bool writeComplete = false;

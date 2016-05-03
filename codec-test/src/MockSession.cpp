@@ -15,7 +15,7 @@ using namespace codec;
 using namespace boost;
 using namespace boost::asio;
 
-MockSession::MockSession() {
+MockSession::MockSession() : closed(false) {
 }
 
 MockSession::~MockSession() {
@@ -32,9 +32,18 @@ SessionPtr MockSession::getSession() {
 	return ptr;
 }
 
+boost::asio::io_service& MockSession::getIoService() {
+	return io_service;
+}
+
 void MockSession::read(Session::ReadBuffer rbuf,
 		Session::IoCompHandler handler) {
 	post([rbuf, handler, this](){
+		if(isClosed()) {
+			handler(boost::system::error_code(boost::system::errc::connection_reset,
+							boost::system::get_system_category()), 0);
+			return;
+		}
 		boost::asio::streambuf::const_buffers_type cbufs = echoBuffer.data();
 
 		const_buffer cb = *(cbufs.begin());
@@ -49,9 +58,13 @@ void MockSession::read(Session::ReadBuffer rbuf,
 				reinterpret_cast<char*>(boost::asio::detail::buffer_cast_helper(b));
 
 		std::size_t len = (size > csize) ? csize : size;
-		std::copy(cdata, (cdata + len), data);
+		if(len != 0) {
+			std::copy(cdata, (cdata + len), data);
 
-		echoBuffer.consume(len);
+			echoBuffer.consume(len);
+			closed = true;
+		}
+
 		handler(
 				boost::system::error_code(boost::system::errc::success,
 						boost::system::get_system_category()), len);
@@ -62,6 +75,11 @@ void MockSession::write(Session::WriteBuffer wbuf,
 		Session::IoCompHandler handler) {
 
 	post([wbuf, handler, this](){
+		if(isClosed()) {
+			handler(boost::system::error_code(boost::system::errc::connection_reset,
+					boost::system::get_system_category()), 0);
+			return;
+		}
 		boost::asio::streambuf::const_buffers_type::const_iterator cit =
 				wbuf.begin();
 		for (; cit != wbuf.end(); ++cit) {
@@ -99,6 +117,10 @@ void MockSession::post(Session::Task t) {
 
 void MockSession::close() {
 
+}
+
+bool MockSession::isClosed() {
+	return closed;
 }
 
 void MockSession::run() {
