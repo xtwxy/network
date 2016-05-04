@@ -15,9 +15,8 @@
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include <nw/LogFilter.h>
-#include <nw/CodecFactory.h>
 
+#include "Codec.h"
 
 namespace nw {
 
@@ -32,123 +31,95 @@ void print_buffer(const char* const buffer, const std::size_t length, const char
 class Connection : public boost::enable_shared_from_this<Connection> {
 public:
 	typedef boost::shared_ptr<Connection> Ptr;
-	Connection(boost::asio::io_service& ios,
-			std::size_t bufferSize,
-			std::size_t timeoutSecs)
+
+	Connection(boost::asio::io_service& ios)
 		:ios_(ios),
 		 socket_(ios),
-		 BUFFER_SIZE(bufferSize),
-		 readBuffer_(new char[bufferSize]),
-		 writeBuffer_(new char[bufferSize]),
-		 TIMEOUT_SECONDS(timeoutSecs),
-		 bytesToWrite(0),
-		 bytesRead(0) { }
+		 pipeline_(ios) {
+
+	}
+
 	virtual ~Connection() {
 		std::cerr << "Connection::~Connection()" << std::endl;
+		close();
+	}
+
+	static Ptr newConnection(boost::asio::io_service& ios) {
+		return Ptr(new Connection(ios));
+	}
+
+	void start(codec::PipelineInitializer initialize) {
+		pipeline_.setSession(getSession());
+		initialize(pipeline_);
+		pipeline_.start();
+	}
+
+	boost::asio::ip::tcp::socket& socket() {
+		return socket_;
+	}
+
+private:
+	void read(codec::Session::ReadBuffer buff,
+			codec::Session::IoCompHandler handler) {
+		socket_.async_read_some(buff, handler);
+	}
+
+	void write(codec::Session::WriteBuffer buff,
+			codec::Session::IoCompHandler handler) {
+		async_write(socket_, buff, handler);
+	}
+
+	void close() {
 		try {
 			socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
 		} catch(...) { }
 		try { socket_.close(); } catch(...) { }
-		delete[] readBuffer_;
-		delete[] writeBuffer_;
 	}
 
-	static Ptr newConnection(boost::asio::io_service& ios, std::size_t bufferSize, std::size_t timeoutSecs) {
-		return Ptr(new Connection(ios, bufferSize, timeoutSecs));
+	void post(codec::Session::Task t) {
+		ios_.post(t);
 	}
-	void start() {
-		// start reader/writer
-		std::cerr << __FILE__ << "(" << __LINE__ << ") Connection::start()" << std::endl;
-		read();
-	}
-	boost::asio::ip::tcp::socket& socket() {
-		return socket_;
-	}
-private:
-	void echo() {
-		memcpy(writeBuffer_, readBuffer_, bytesRead);
-		bytesToWrite = bytesRead;
-		bytesRead = 0;
 
-#ifdef PRINT_BUFFER
-				print_buffer(writeBuffer_, bytesToWrite, "[ECHO] ");
-#endif
+	codec::SessionPtr getSession() {
+		codec::SessionPtr ptr(
+				new codec::Session(
+						boost::bind(&Connection::read, shared_from_this(), _1, _2),
+						boost::bind(&Connection::write, shared_from_this(), _1, _2),
+						boost::bind(&Connection::post, shared_from_this(), _1),
+						boost::bind(&Connection::close, shared_from_this())));
+		return ptr;
+	}
 
-		write();
-	}
-	void read() {
-		socket_.async_read_some(
-				boost::asio::buffer(readBuffer_, BUFFER_SIZE),
-				boost::bind(
-						&Connection::onReadComplete,
-						shared_from_this(),
-						_1,
-						_2
-						)
-		);
-	}
-	void write() {
-		async_write(
-				socket_,
-				boost::asio::buffer(writeBuffer_, bytesToWrite),
-				boost::bind(
-						&Connection::onWriteComplete,
-						shared_from_this(),
-						_1,
-						_2
-						)
-		);
-	}
-	void onReadComplete(
-			const boost::system::error_code& ec,
-			size_t bytes_transferred
-		) {
-		if(!ec) {
-			bytesRead += bytes_transferred;
-			if(bytesRead != 0) {
-				echo();
-			}
-		} else {
-			std::cerr << __FILE__ << "(" << __LINE__ << ") " << ec << std::endl;
-		}
-
-	}
-	void onWriteComplete(
-			const boost::system::error_code& ec,
-			size_t bytes_transferred
-		) {
-		if(!ec) {
-			read();
-		} else {
-			std::cerr << __FILE__ << "(" << __LINE__ << ") " << ec << std::endl;
-		}
-	}
 	boost::asio::io_service& ios_;
 	boost::asio::ip::tcp::socket socket_;
-	const std::size_t BUFFER_SIZE;
-	char* const readBuffer_;
-	char* const writeBuffer_;
-	const std::size_t TIMEOUT_SECONDS;
-	std::size_t bytesToWrite;
-	std::size_t bytesRead;
-	LogFilter::Ptr logFilter_;
-	CodecFactory::Ptr codecFactory_;
+	codec::Pipeline pipeline_;
 };
 
 class Acceptor : public boost::enable_shared_from_this<Acceptor> {
 public:
 	typedef boost::shared_ptr<Acceptor> Ptr;
-	Acceptor(boost::asio::io_service& ios,
-			int port,
-			std::size_t bufferSize,
-			std::size_t timeoutSecs)
+	Acceptor(boost::asio::io_service& ios)
 		:ios_(ios),
-		port_(port),
-		acceptor_(ios, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
-		BUFFER_SIZE(bufferSize),
-		TIMEOUT_SECONDS(timeoutSecs) {
+		acceptor_(ios),
+		port_(1999) {
 	}
 	virtual ~Acceptor() { }
+
+	Acceptor& setPort(unsigned short port) {
+		port_ = port;
+		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), port);
+		acceptor_.open(endpoint.protocol());
+		acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+		acceptor_.bind(endpoint);
+		acceptor_.listen();
+		return *this;
+	}
+
+	Acceptor& setPipelineInitializer(codec::PipelineInitializer initializer) {
+		initializer_ = initializer;
+		return *this;
+	}
+
 	void start() {
 		accept();
 	}
@@ -156,7 +127,7 @@ private:
 	void onAccept(Connection::Ptr conn, const boost::system::error_code& ec) {
 		std::cerr << "Acceptor::onAccept(): " << ec << std::endl;
 		if(!ec) {
-			conn->start();
+			conn->start(initializer_);
 		} else {
 			// accept failed.
 		}
@@ -164,7 +135,7 @@ private:
 	}
 	void accept() {
 		std::cerr << "Acceptor::accept()" << std::endl;
-		Connection::Ptr ptr = Connection::newConnection(ios_, BUFFER_SIZE, TIMEOUT_SECONDS);
+		Connection::Ptr ptr = Connection::newConnection(ios_);
 		acceptor_.async_accept(ptr->socket(),
 				boost::bind(&Acceptor::onAccept,
 						shared_from_this(),
@@ -172,10 +143,9 @@ private:
 			);
 	}
 	boost::asio::io_service& ios_;
-	const int port_;
+	unsigned short port_;
 	boost::asio::ip::tcp::acceptor acceptor_;
-	const std::size_t BUFFER_SIZE;
-	const std::size_t TIMEOUT_SECONDS;
+	codec::PipelineInitializer initializer_;
 };
 
 } /* namespace nw */

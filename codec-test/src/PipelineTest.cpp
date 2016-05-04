@@ -26,7 +26,8 @@ BOOST_AUTO_TEST_CASE( testCodec ) {
 		  	BOOST_CHECK_EQUAL(b, false);
 	};
   // initialize pipeline.
-  Pipeline pipeline(mockSession->getIoService(), mockSession->getSession());
+  Pipeline pipeline(mockSession->getIoService());
+  pipeline.setSession(mockSession->getSession());
 
   MockTrivialCodec::Ptr layer1 = boost::make_shared<MockTrivialCodec>();
   MockTrivialCodec::Ptr layer2 = boost::make_shared<MockTrivialCodec>();  

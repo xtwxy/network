@@ -83,13 +83,13 @@ private:
 	CompletionHandler action;
 };
 
-class PipelineImpl : public boost::enable_shared_from_this<PipelineImpl>,
-private boost::noncopyable {
+class PipelineImpl : private boost::noncopyable {
 public:
-	PipelineImpl(boost::asio::io_service& ioService, Pipeline& p, SessionPtr ssn);
+	PipelineImpl(boost::asio::io_service& ioService, Pipeline& p);
 	virtual ~PipelineImpl();
 	void addLast(CodecPtr encoder);
 	void remove(CodecPtr encoder);
+	void setSession(SessionPtr ssn);
 	void setHandler(HandlerPtr handler);
 	void write(boost::any&);
 	void write(boost::any&, CompletionHandler);
@@ -138,11 +138,12 @@ private:
 
 class Pipeline :private boost::noncopyable {
 public:
-	Pipeline(boost::asio::io_service& ioService, SessionPtr ssn);
+	Pipeline(boost::asio::io_service& ioService);
 	virtual ~Pipeline();
 
 	void addLast(CodecPtr encoder);
 	void remove(CodecPtr encoder);
+	void setSession(SessionPtr ssn);
 	void setHandler(HandlerPtr handler);
 	void write(boost::any&);
 	void write(boost::any&, CompletionHandler);

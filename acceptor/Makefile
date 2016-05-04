@@ -3,13 +3,13 @@ include ../common/Makefile.def
 TARGET = acceptor$(EXE)
 
 SOURCES = \
-	src/CodecFactory.cpp \
-	src/LogFilter.cpp \
+   ../codec/src/Codec.cpp \
+   ../codec-test/src/MockHandler.cpp \
    src/main.cpp 
 
-INCLUDE += -Iinclude
+INCLUDE += -Iinclude -I../codec/include -I../codec-test/include
 
 LIB += -lpthread
-CXX_FLAGS += #-DPRINT_BUFFER #-DBOOST_ASIO_ENABLE_HANDLER_TRACKING
+CXX_FLAGS +=-std=c++11#-DPRINT_BUFFER #-DBOOST_ASIO_ENABLE_HANDLER_TRACKING
 
 include ../common/Makefile.in

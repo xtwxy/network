@@ -47,9 +47,8 @@ boost::any& WriteRequest::getData() {
   return data;
 }
 
-PipelineImpl::PipelineImpl(boost::asio::io_service& ioService, Pipeline& p,
-                           SessionPtr ssn) :
-    parent(p), session(ssn), BUFFER_SIZE(4096), readBuffer(), ioService(
+PipelineImpl::PipelineImpl(boost::asio::io_service& ioService, Pipeline& p) :
+    parent(p), session(), BUFFER_SIZE(4096), readBuffer(), ioService(
         ioService), READ_TIMEOUT_SECS(30), WRITE_TIMEOUT_SECS(30),
 		readTimer(ioService), writeTimer(ioService), sessionClosed(false) {
     }
@@ -69,6 +68,10 @@ void PipelineImpl::remove(CodecPtr codec) {
                      [&codec] (CodecContext& codecContext) {
                      return (codecContext.get<1>() == codec);
                      }));
+}
+
+void PipelineImpl::setSession(SessionPtr ssn) {
+	session = ssn;
 }
 
 void PipelineImpl::setHandler(HandlerPtr handler) {
@@ -342,8 +345,8 @@ void PipelineImpl::processTimeout() {
                 });
 }
 
-Pipeline::Pipeline(boost::asio::io_service& ioService, SessionPtr ssn) :
-    impl(ioService, *this, ssn) {
+Pipeline::Pipeline(boost::asio::io_service& ioService) :
+    impl(ioService, *this) {
     }
 
 Pipeline::~Pipeline() {
@@ -355,6 +358,10 @@ void Pipeline::addLast(CodecPtr codec) {
 
 void Pipeline::remove(CodecPtr codec) {
   impl.remove(codec);
+}
+
+void Pipeline::setSession(SessionPtr ssn) {
+  impl.setSession(ssn);
 }
 
 void Pipeline::setHandler(HandlerPtr handler) {
