@@ -197,9 +197,10 @@ void PipelineImpl::onReadComplete(const boost::system::error_code& ec,
 		processDataArrive();
 	  }
 	  read();
-  } else if (ec.value() == boost::asio::error::broken_pipe
-		  || boost::asio::error::connection_reset
-		  || boost::asio::error::connection_aborted) {
+  } else if (ec.value() == boost::asio::error::eof
+		  || ec.value() == boost::asio::error::broken_pipe
+		  || ec.value() == boost::asio::error::connection_reset
+		  || ec.value() == boost::asio::error::connection_aborted) {
 	  sessionClosed = true;
 	  processSessionClose();
   } else {
@@ -226,9 +227,10 @@ void PipelineImpl::onWriteComplete(const boost::system::error_code& ec,
     } else {
       // nothing to write!
     }
-  } else if (ec.value() == boost::asio::error::broken_pipe
-		  || boost::asio::error::connection_reset
-		  || boost::asio::error::connection_aborted) {
+  } else if (ec.value() == boost::asio::error::eof
+		  || ec.value() == boost::asio::error::broken_pipe
+		  || ec.value() == boost::asio::error::connection_reset
+		  || ec.value() == boost::asio::error::connection_aborted) {
 	  sessionClosed = true;
 	  processSessionClose();
   } else {
@@ -277,6 +279,7 @@ void PipelineImpl::processSessionClose() {
   handlerContext.get<1>()->sessionClose(
 		  *handlerContext.get<0>()
 		  );
+  session.reset();
 }
 
 void PipelineImpl::processExceptionCaught(const boost::system::error_code& ec) {
@@ -290,6 +293,7 @@ void PipelineImpl::processExceptionCaught(const boost::system::error_code& ec) {
 		  *handlerContext.get<0>(),
 		  ex
 		  );
+  session.reset();
 }
 
 void PipelineImpl::writeBackContextQueues() {
