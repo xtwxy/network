@@ -7,7 +7,8 @@
 
 static int BUFFER_SIZE = 4096;
 
-boost::asio::streambuf buffer;
+char* readBuffer = NULL;//[BUFFER_SIZE];
+char* writeBuffer = NULL;//[BUFFER_SIZE];
 
 boost::asio::io_service ios;
 boost::asio::ip::tcp::resolver resolver(ios);
@@ -20,31 +21,16 @@ void onWriteComplete(const boost::system::error_code& ec,
 
 void read() {
 	sock.async_read_some(
-			buffer.prepare(BUFFER_SIZE),
+			boost::asio::buffer(readBuffer, BUFFER_SIZE),
 			onReadComplete
 	);
 }
 void write() {
-    if(buffer.size() == 0) {
-        std::ostream os(&buffer);
-        os << "Hello, World!\n";
-
-        boost::asio::mutable_buffer b;
-        std::size_t size = boost::asio::detail::buffer_size_helper(b);
-        void * data = boost::asio::detail::buffer_cast_helper(b);
-      async_write(
-          sock,
-          buffer.data(),
-          onWriteComplete
-          );
-
-    } else {
-      async_write(
-          sock,
-          buffer.data(),
-          onWriteComplete
-          );
-	}
+	async_write(
+			sock,
+			boost::asio::buffer(writeBuffer, BUFFER_SIZE),
+			onWriteComplete
+	);
 }
 
 void onConnectComplete(
@@ -85,7 +71,6 @@ void resolve(std::string host, std::string port) {
 void onReadComplete(const boost::system::error_code& ec,
 		size_t bytes_transferred) {
 	if (!ec) {
-    buffer.commit(bytes_transferred);
 		read();
 	} else {
 		std::cerr << "onReadComplete(): " << ec << std::endl;
@@ -95,7 +80,6 @@ void onReadComplete(const boost::system::error_code& ec,
 void onWriteComplete(const boost::system::error_code& ec,
 		size_t bytes_transferred) {
 	if (!ec) {
-    buffer.consume(bytes_transferred);
 		write();
 	} else {
 		std::cerr << "onWriteComplete(): " << ec << std::endl;
@@ -105,17 +89,22 @@ void onWriteComplete(const boost::system::error_code& ec,
 int main(int argc, char* argv[]) {
 	if(argc < 3) {
 		std::cerr << "Usage:\n"
-			<< argv[0] << " <host> <port>"
+			<< argv[0] << "<host> <port>"
 			<< std::endl; 
 			return EXIT_FAILURE;
 	} else if(argc == 4) {
 		BUFFER_SIZE = atoi(argv[3]);
 	}
-
-    resolve(argv[1], argv[2]);
-
+	readBuffer = new char[BUFFER_SIZE];
+	writeBuffer = new char[BUFFER_SIZE];
+	for(std::size_t i = 0; i != BUFFER_SIZE; ++i) {
+		readBuffer[i] = i;
+		writeBuffer[i]	= i;
+	}
+	resolve(argv[1], argv[2]);
 	ios.run();
-
+	delete[] readBuffer;
+	delete[] writeBuffer;
 
 	return EXIT_SUCCESS;
 }

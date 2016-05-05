@@ -26,16 +26,16 @@ BOOST_AUTO_TEST_CASE( testCodec ) {
 		  	BOOST_CHECK_EQUAL(b, false);
 	};
   // initialize pipeline.
-  Pipeline pipeline(mockSession->getIoService());
-  pipeline.setSession(mockSession->getSession());
+  PipelinePtr pipeline(new Pipeline(mockSession->getIoService()));
+  pipeline->setSession(mockSession->getSession());
 
   MockTrivialCodec::Ptr layer1 = boost::make_shared<MockTrivialCodec>();
   MockTrivialCodec::Ptr layer2 = boost::make_shared<MockTrivialCodec>();  
 
-  pipeline.addLast(layer1->getCodec());
-  pipeline.addLast(layer2->getCodec());
-  pipeline.setHandler(mockHandler->getHandler());
-  pipeline.start();
+  pipeline->addLast(layer1->getCodec());
+  pipeline->addLast(layer2->getCodec());
+  pipeline->setHandler(mockHandler->getHandler());
+  pipeline->start();
 
   // prepare data to be written.
   bool readComplete = false;
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE( testCodec ) {
   BOOST_CHECK_EQUAL(sizeof(wbuff), sb.size());
 
   boost::any out = &sb;
-  pipeline.write(out);
+  pipeline->write(out);
 
   try{
 	  mockSession->getIoService().run();

@@ -35,7 +35,7 @@ public:
 	Connection(boost::asio::io_service& ios)
 		:ios_(ios),
 		 socket_(ios),
-		 pipeline_(ios) {
+		 pipeline_(new codec::Pipeline(ios)) {
 
 	}
 
@@ -49,9 +49,9 @@ public:
 	}
 
 	void start(codec::PipelineInitializer initialize) {
-		pipeline_.setSession(getSession());
-		initialize(pipeline_);
-		pipeline_.start();
+		pipeline_->setSession(getSession());
+		initialize(*pipeline_);
+		pipeline_->start();
 	}
 
 	boost::asio::ip::tcp::socket& socket() {
@@ -92,7 +92,7 @@ private:
 
 	boost::asio::io_service& ios_;
 	boost::asio::ip::tcp::socket socket_;
-	codec::Pipeline pipeline_;
+	codec::PipelinePtr pipeline_;
 };
 
 class Acceptor : public boost::enable_shared_from_this<Acceptor> {

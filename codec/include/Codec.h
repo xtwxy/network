@@ -35,6 +35,7 @@ typedef boost::shared_ptr<Session> SessionPtr;
 typedef boost::shared_ptr<Codec> CodecPtr;
 typedef boost::shared_ptr<Handler> HandlerPtr;
 typedef boost::shared_ptr<Context> ContextPtr;
+typedef boost::shared_ptr<Pipeline> PipelinePtr;
 
 typedef boost::tuple<ContextPtr, CodecPtr> CodecContext;
 typedef boost::tuple<ContextPtr, HandlerPtr> HandlerContext;
@@ -83,10 +84,12 @@ private:
 	CompletionHandler action;
 };
 
-class PipelineImpl : private boost::noncopyable {
+class Pipeline : public boost::enable_shared_from_this<Pipeline>,
+private boost::noncopyable {
 public:
-	PipelineImpl(boost::asio::io_service& ioService, Pipeline& p);
-	virtual ~PipelineImpl();
+	typedef boost::shared_ptr<Pipeline> Ptr;
+	Pipeline(boost::asio::io_service& ioService);
+	virtual ~Pipeline();
 	void addLast(CodecPtr encoder);
 	void remove(CodecPtr encoder);
 	void setSession(SessionPtr ssn);
@@ -120,7 +123,6 @@ private:
 	void processTimeout();
 	void writeBackContextQueues();
 
-	Pipeline& parent;
 	SessionPtr session;
 	std::list<CodecContext> codecContexts;
 	HandlerContext handlerContext;
@@ -131,30 +133,9 @@ private:
 	boost::asio::deadline_timer writeTimer;
 	boost::asio::streambuf readBuffer;
 	std::queue<WriteRequest::Ptr> writeRequestQueue;
-	boost::mutex mutex;
+	//boost::mutex mutex;
 	boost::asio::io_service& ioService;
 	bool sessionClosed;
-};
-
-class Pipeline :private boost::noncopyable {
-public:
-	Pipeline(boost::asio::io_service& ioService);
-	virtual ~Pipeline();
-
-	void addLast(CodecPtr encoder);
-	void remove(CodecPtr encoder);
-	void setSession(SessionPtr ssn);
-	void setHandler(HandlerPtr handler);
-	void write(boost::any&);
-	void write(boost::any&, CompletionHandler);
-	void setBufferSize(std::size_t bufferSize);
-	void setReadTimeout(std::size_t seconds);
-	void setWriteTimeout(std::size_t seconds);
-	void close();
-	boost::asio::io_service& getIoService();
-	void start();
-private:
-	PipelineImpl impl;
 };
 
 class Context {

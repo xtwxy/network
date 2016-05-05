@@ -55,7 +55,7 @@ void test() {
 }
 
 int main(int argc, char* argv[]) {
-  for(std::size_t i = 0; i < 100; ++i) {
+  for(std::size_t i = 0; i < 1000000000; ++i) {
     test();
   }
   return EXIT_SUCCESS;
