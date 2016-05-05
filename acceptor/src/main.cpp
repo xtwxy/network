@@ -21,15 +21,15 @@ private boost::noncopyable {
 public:
 	typedef boost::shared_ptr<EchoHandler> Ptr;
 
-	EchoHandler() :buff() { }
+	EchoHandler() { }
 	virtual ~EchoHandler() { }
 
 	void handle(Context& ctx,	boost::any& data)  {
-		boost::asio::streambuf* psb = boost::any_cast<boost::asio::streambuf*>(data);
+		BufferPtr psb = boost::any_cast<BufferPtr>(data);
 		std::size_t len = psb->size();
 		if(len == 0) return;
-
-		boost::asio::streambuf::mutable_buffers_type mbs = buff.prepare(len);
+		BufferPtr buff = boost::make_shared<boost::asio::streambuf>();
+		boost::asio::streambuf::mutable_buffers_type mbs = buff->prepare(len);
 		boost::asio::mutable_buffer mb = *(mbs.begin());
 		std::size_t mbsize = boost::asio::detail::buffer_size_helper(mb);
 		char* mbdata = reinterpret_cast<char*>(boost::asio::detail::buffer_cast_helper(mb));
@@ -46,10 +46,11 @@ public:
 			}
 			index += icb;
 		}
-		buff.commit(len);
+		assert(index == len);
+		buff->commit(len);
 		psb->consume(len);
 
-		boost::any out = &buff;
+		boost::any out = buff;
 
 		ctx.write(out);
 	}
@@ -71,8 +72,6 @@ public:
 				));
 		return ptr;
 	}
-private:
-	boost::asio::streambuf buff;
 };
 
 int main(int argc, char* argv[]) {

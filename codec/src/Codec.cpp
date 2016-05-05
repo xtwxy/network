@@ -6,6 +6,7 @@
  */
 
 #include <boost/bind.hpp>
+#include <boost/make_shared.hpp>
 #include "Codec.h"
 
 namespace codec {
@@ -48,11 +49,17 @@ boost::any& WriteRequest::getData() {
 }
 
 Pipeline::Pipeline(boost::asio::io_service& ioService) :
-    session(), BUFFER_SIZE(4096), readBuffer(), ioService(
-        ioService), READ_TIMEOUT_SECS(30), WRITE_TIMEOUT_SECS(30),
-		readTimer(ioService), writeTimer(ioService), sessionClosed(false),
-		readCompleted(false) {
-    }
+    session(),
+	BUFFER_SIZE(4096),
+	readBuffer(boost::make_shared<boost::asio::streambuf>()),
+	ioService(ioService),
+	READ_TIMEOUT_SECS(30),
+	WRITE_TIMEOUT_SECS(30),
+	readTimer(ioService),
+	writeTimer(ioService),
+	sessionClosed(false),
+	readCompleted(false) {
+}
 
 Pipeline::~Pipeline() {
 }
@@ -120,7 +127,7 @@ boost::asio::io_service& Pipeline::getIoService() {
 void Pipeline::read() {
   // 2.start reading.
   readCompleted = false;
-  session->read(readBuffer.prepare(BUFFER_SIZE),
+  session->read(readBuffer->prepare(BUFFER_SIZE),
                 boost::bind(&Pipeline::onReadComplete, shared_from_this(), _1,
                             _2));
 }
@@ -131,9 +138,9 @@ void Pipeline::dequeueWriteRequest() {
 	while(true) {
 	  if(!sessionClosed && !writeRequestQueue.empty()) {
 		boost::any& any = writeRequestQueue.front()->getData();
-		if (any.type() == typeid(boost::asio::streambuf*)) {
-		  boost::asio::streambuf* buffer = boost::any_cast<
-			  boost::asio::streambuf*>(any);
+		if (any.type() == typeid(boost::shared_ptr<boost::asio::streambuf>)) {
+			boost::shared_ptr<boost::asio::streambuf> buffer =
+					boost::any_cast<boost::shared_ptr<boost::asio::streambuf> >(any);
 		  session->write(buffer->data(),
 						 boost::bind(&Pipeline::onWriteComplete,
 									 shared_from_this(), _1, _2));
@@ -207,7 +214,7 @@ void Pipeline::onReadComplete(const boost::system::error_code& ec,
   readCompleted = true;
   if (!ec) {
 	  if(bytesTransfered != 0) {
-		readBuffer.commit(bytesTransfered);
+		readBuffer->commit(bytesTransfered);
 		processDataArrive();
 	  }
 //	  if(!sessionClosed) {
@@ -229,7 +236,8 @@ void Pipeline::onWriteComplete(const boost::system::error_code& ec,
 
   if (!ec) {
       boost::any& any = writeRequestQueue.front()->getData();
-      boost::asio::streambuf* buffer = boost::any_cast<boost::asio::streambuf*>(any);
+      boost::shared_ptr<boost::asio::streambuf> buffer =
+    		  boost::any_cast<boost::shared_ptr<boost::asio::streambuf> >(any);
       buffer->consume(bytesTransfered);
 
       if(buffer->size() == 0) {
@@ -350,7 +358,7 @@ void Pipeline::writeBackContextQueues() {
 void Pipeline::processDataArrive() {
   std::list<boost::any> in;
 
-  in.push_back(&readBuffer);
+  in.push_back(readBuffer);
 
   std::list<boost::any> out;
 
@@ -368,7 +376,7 @@ void Pipeline::processDataArrive() {
   }
 
   // check possible write backs.
-	writeBackContextQueues();
+  writeBackContextQueues();
 }
 
 void Pipeline::processTimeout() {

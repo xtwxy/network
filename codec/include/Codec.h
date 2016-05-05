@@ -31,6 +31,7 @@ class Handler;
 class Context;
 class Pipeline;
 
+typedef boost::shared_ptr<boost::asio::streambuf> BufferPtr;
 typedef boost::shared_ptr<Session> SessionPtr;
 typedef boost::shared_ptr<Codec> CodecPtr;
 typedef boost::shared_ptr<Handler> HandlerPtr;
@@ -131,7 +132,7 @@ private:
 	std::size_t WRITE_TIMEOUT_SECS;
 	boost::asio::deadline_timer readTimer;
 	boost::asio::deadline_timer writeTimer;
-	boost::asio::streambuf readBuffer;
+	BufferPtr readBuffer;
 	std::queue<WriteRequest::Ptr> writeRequestQueue;
 	//boost::mutex mutex;
 	boost::asio::io_service& ioService;
