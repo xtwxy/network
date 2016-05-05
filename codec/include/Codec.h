@@ -136,6 +136,7 @@ private:
 	//boost::mutex mutex;
 	boost::asio::io_service& ioService;
 	bool sessionClosed;
+	bool readCompleted;
 };
 
 class Context {

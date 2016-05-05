@@ -50,7 +50,8 @@ boost::any& WriteRequest::getData() {
 Pipeline::Pipeline(boost::asio::io_service& ioService) :
     session(), BUFFER_SIZE(4096), readBuffer(), ioService(
         ioService), READ_TIMEOUT_SECS(30), WRITE_TIMEOUT_SECS(30),
-		readTimer(ioService), writeTimer(ioService), sessionClosed(false) {
+		readTimer(ioService), writeTimer(ioService), sessionClosed(false),
+		readCompleted(false) {
     }
 
 Pipeline::~Pipeline() {
@@ -118,6 +119,7 @@ boost::asio::io_service& Pipeline::getIoService() {
 
 void Pipeline::read() {
   // 2.start reading.
+  readCompleted = false;
   session->read(readBuffer.prepare(BUFFER_SIZE),
                 boost::bind(&Pipeline::onReadComplete, shared_from_this(), _1,
                             _2));
@@ -143,7 +145,7 @@ void Pipeline::dequeueWriteRequest() {
 	  } else if(!sessionClosed && writeRequestQueue.empty()) {
 		  // nothing to write!
 		  waitWriteRequest();
-		  read();
+		  //read();
 		  return;
 	  } else {
 		  // session closed.
@@ -202,6 +204,7 @@ void Pipeline::start() {
 
 void Pipeline::onReadComplete(const boost::system::error_code& ec,
                                   std::size_t bytesTransfered) {
+  readCompleted = true;
   if (!ec) {
 	  if(bytesTransfered != 0) {
 		readBuffer.commit(bytesTransfered);
@@ -232,6 +235,17 @@ void Pipeline::onWriteComplete(const boost::system::error_code& ec,
       if(buffer->size() == 0) {
    	    writeRequestQueue.front()->onComplete();
         writeRequestQueue.pop();
+        /*
+         * to avoid to much request that generate too much response
+         * to write, move read call to this location instead of
+         * an endless cycle of reads.
+         */
+        if(!sessionClosed
+        		&& writeRequestQueue.empty()
+				&& readCompleted) {
+          // nothing to write!
+          read();
+        }
       }
       dequeueWriteRequest();
   } else if (ec.value() == boost::asio::error::eof
