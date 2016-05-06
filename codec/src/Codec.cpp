@@ -5,6 +5,7 @@
  *      Author: master
  */
 
+#include <cassert>
 #include <boost/bind.hpp>
 #include <boost/make_shared.hpp>
 #include "Codec.h"
@@ -147,6 +148,7 @@ void Pipeline::dequeueWriteRequest() {
 		  return;
 		} else {
 		  // invalid data!
+	      assert(false);
 		  writeRequestQueue.pop();
 		}
 	  } else if(!sessionClosed && writeRequestQueue.empty()) {
@@ -184,12 +186,12 @@ void Pipeline::enqueueWriteRequest(std::list<boost::any>& out,
 
 void Pipeline::waitWriteRequest() {
 	writeTimer.expires_from_now(boost::posix_time::seconds(WRITE_TIMEOUT_SECS));
-	writeTimer.async_wait(boost::bind(&Pipeline::onWriterTimeout, shared_from_this(), _1));
+	writeTimer.async_wait(boost::bind(&Pipeline::onWriterNotified, shared_from_this(), _1));
 }
 
 void Pipeline::waitReadResponse() {
 	readTimer.expires_from_now(boost::posix_time::seconds(READ_TIMEOUT_SECS));
-	readTimer.async_wait(boost::bind(&Pipeline::onReaderTimeout, shared_from_this(), _1));
+	readTimer.async_wait(boost::bind(&Pipeline::onReaderNotified, shared_from_this(), _1));
 }
 
 void Pipeline::notifyWriter() {
@@ -217,9 +219,16 @@ void Pipeline::onReadComplete(const boost::system::error_code& ec,
 		readBuffer->commit(bytesTransfered);
 		processDataArrive();
 	  }
-//	  if(!sessionClosed) {
-//		  read();
-//	  }
+      /*
+       * to avoid to much request that generate too much response
+       * to write, move read call to this location instead of
+       * an endless cycle of reads.
+       */
+      if(!sessionClosed
+      		&& writeRequestQueue.empty()) {
+        // nothing to write!
+        read();
+      }
   } else if (ec.value() == boost::asio::error::eof
 		  || ec.value() == boost::asio::error::broken_pipe
 		  || ec.value() == boost::asio::error::connection_reset
@@ -267,7 +276,7 @@ void Pipeline::onWriteComplete(const boost::system::error_code& ec,
   }
 }
 
-void Pipeline::onReaderTimeout(const boost::system::error_code& ec) {
+void Pipeline::onReaderNotified(const boost::system::error_code& ec) {
   if (!ec) {
 	  if (!sessionClosed) {
 		  processTimeout();
@@ -279,7 +288,7 @@ void Pipeline::onReaderTimeout(const boost::system::error_code& ec) {
   }
 }
 
-void Pipeline::onWriterTimeout(const boost::system::error_code& ec) {
+void Pipeline::onWriterNotified(const boost::system::error_code& ec) {
   if (!ec) {
     processTimeout();
   } else if (ec.value() == boost::asio::error::operation_aborted) {

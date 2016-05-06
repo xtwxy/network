@@ -38,10 +38,10 @@ boost::asio::io_service& MockSession::getIoService() {
 
 void MockSession::read(Session::ReadBuffer rbuf,
 		Session::IoCompHandler handler) {
+
 	post([rbuf, handler, this](){
 		if(isClosed()) {
-			handler(boost::system::error_code(boost::system::errc::connection_reset,
-							boost::system::get_system_category()), 0);
+			handler(boost::asio::error::make_error_code(boost::asio::error::eof), 0);
 			return;
 		}
 		boost::asio::streambuf::const_buffers_type cbufs = echoBuffer.data();
@@ -76,8 +76,7 @@ void MockSession::write(Session::WriteBuffer wbuf,
 
 	post([wbuf, handler, this](){
 		if(isClosed()) {
-			handler(boost::system::error_code(boost::system::errc::connection_reset,
-					boost::system::get_system_category()), 0);
+			handler(boost::asio::error::make_error_code(boost::asio::error::eof), 0);
 			return;
 		}
 		boost::asio::streambuf::const_buffers_type::const_iterator cit =

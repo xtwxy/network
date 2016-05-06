@@ -106,8 +106,8 @@ public:
 private:
 	void onReadComplete(const boost::system::error_code&, std::size_t);
 	void onWriteComplete(const boost::system::error_code&, std::size_t);
-	void onReaderTimeout(const boost::system::error_code& e);
-	void onWriterTimeout(const boost::system::error_code& e);
+	void onReaderNotified(const boost::system::error_code& e);
+	void onWriterNotified(const boost::system::error_code& e);
 	void read();
 	void dequeueWriteRequest();
 	void enqueueWriteRequest(std::list<boost::any>&);

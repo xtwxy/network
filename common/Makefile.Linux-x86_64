@@ -4,8 +4,7 @@ INCLUDE += -I/usr/include -I/usr/local/include
 
 LIB += -L/usr/local/lib -lboost_system
 
-
-CXX_FLAGS += -O3 -fPIC
+CXX_FLAGS +=-fPIC
 	#-g2 -DBOOST_ASIO_ENABLE_HANDLER_TRACKING -std=c++0x -fvisibility=hidden
 
 GCC_PREFIX=#mips64-linux-gnu-

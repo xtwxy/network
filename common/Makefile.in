@@ -9,3 +9,14 @@ else
   include ../common/Makefile.$(UNAME_S)-$(UNAME_P)  
 endif
 endif
+
+ifdef DEBUG
+ifeq ($(DEBUG), yes) 
+    CXX_FLAGS +=-g2
+endif
+ifeq ($(DEBUG), no) 
+    CXX_FLAGS +=-O3
+endif
+else
+    CXX_FLAGS +=-g2
+endif

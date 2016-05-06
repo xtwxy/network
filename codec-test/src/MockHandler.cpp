@@ -22,13 +22,13 @@ MockHandler::~MockHandler() {
 }
 
 void MockHandler::handle(Context& ctx,	boost::any& data){
-  boost::asio::streambuf* psb = boost::any_cast<boost::asio::streambuf*>(data);
+  BufferPtr psb = boost::any_cast<BufferPtr>(data);
   std::size_t len = psb->size();
 
   std::cout << this << " handle(): psb->size() = " << len << std::endl;
 
   char * buff = new char[len];
-  std::istream is(psb);
+  std::istream is(psb.get());
   is.read(buff, len);
   psb->consume(len);
   for(std::size_t i = 0; i != len; ++i) {

@@ -44,13 +44,13 @@ BOOST_AUTO_TEST_CASE( testCodec ) {
   char wbuff[] { (char)0xca, (char)0xfe, (char)0xba, (char)0xbe,
     (char)0xff, (char)0x00, (char)0x7e };
 
-  boost::asio::streambuf sb;
-  std::ostream os(&sb);
+  BufferPtr sb = boost::make_shared<boost::asio::streambuf>();;
+  std::ostream os(sb.get());
   os.write(wbuff, sizeof(wbuff));
 
-  BOOST_CHECK_EQUAL(sizeof(wbuff), sb.size());
+  BOOST_CHECK_EQUAL(sizeof(wbuff), sb->size());
 
-  boost::any out = &sb;
+  boost::any out = sb;
   pipeline->write(out);
 
   try{
