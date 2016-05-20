@@ -71,6 +71,7 @@ void resolve(std::string host, std::string port) {
 void onReadComplete(const boost::system::error_code& ec,
 		size_t bytes_transferred) {
 	if (!ec) {
+		//write();
 		read();
 	} else {
 		std::cerr << "onReadComplete(): " << ec << std::endl;
@@ -80,6 +81,7 @@ void onReadComplete(const boost::system::error_code& ec,
 void onWriteComplete(const boost::system::error_code& ec,
 		size_t bytes_transferred) {
 	if (!ec) {
+		//read();
 		write();
 	} else {
 		std::cerr << "onWriteComplete(): " << ec << std::endl;
