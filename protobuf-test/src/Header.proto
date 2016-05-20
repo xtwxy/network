@@ -1,0 +1,12 @@
+// Enable generation of Protocol Buffers RPC services.
+option cc_generic_services = true;
+option java_generic_services = true;
+option py_generic_services = true;
+
+message Header {
+    required int32 file_code = 1;
+    required int32 file_length = 2;
+    required int32 version = 3;
+    required int32 shape_type = 4;
+}
+
