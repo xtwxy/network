@@ -10,6 +10,18 @@ using namespace std;
 using namespace boost;
 using namespace CallProtocol;
 
+#define PRINT_MESSAGE(message) {                                                             \
+const unsigned char* p = reinterpret_cast<const unsigned char *>(&message);                  \
+cout << #message << ": " << typeid(message).name() << endl;                                                                    \
+for(size_t i = 0; i != sizeof(message); ++i) {                                               \
+	cout << hex << setw(2) << setfill('0') << static_cast<unsigned short>(*(p + i)) << " ";  \
+}                                                                                            \
+cout << endl;                                                                                \
+}
+
+const size_t LENGTH = 0xbabe;
+const MessageType TYPE = 0xcafe;
+
 BOOST_AUTO_TEST_SUITE( CallProtocolTest )
 
 struct MyOnewayMessage : public OnewayMessage {
@@ -54,27 +66,19 @@ struct MyOnewayMessage : public OnewayMessage {
 };
 
 BOOST_AUTO_TEST_CASE( testMessageHeaderCodec ) {
-	const size_t LENGTH = 0xbabe;
-	const MessageType TYPE = 0xcafe;
 
-	MessageHeader header;
-	header.setLength(LENGTH);
-	header.setType(TYPE);
+	MessageHeader message;
+	message.setLength(LENGTH);
+	message.setType(TYPE);
 
-	BOOST_CHECK_EQUAL(header.getLength(), LENGTH);
-	BOOST_CHECK_EQUAL(header.getType(), TYPE);
+	BOOST_CHECK_EQUAL(message.getLength(), LENGTH);
+	BOOST_CHECK_EQUAL(message.getType(), TYPE);
 
-	const unsigned char* p = reinterpret_cast<const unsigned char *>(&header);
 
-	for(size_t i = 0; i != sizeof(header); ++i) {
-		cout << hex << setw(2) << setfill('0') << static_cast<unsigned short>(*(p + i)) << " ";
-	}
-	cout << endl;
+	PRINT_MESSAGE(message);
 }
 
 BOOST_AUTO_TEST_CASE( testMessageCodec ) {
-	const size_t LENGTH = 0xbabe;
-	const MessageType TYPE = 0xcafe;
 
 	Message message;
 	message.setLength(LENGTH);
@@ -83,18 +87,10 @@ BOOST_AUTO_TEST_CASE( testMessageCodec ) {
 	BOOST_CHECK_EQUAL(message.getLength(), LENGTH);
 	BOOST_CHECK_EQUAL(message.getType(), TYPE);
 
-	const unsigned char* p = reinterpret_cast<const unsigned char *>(&message);
-
-	for(size_t i = 0; i != sizeof(message); ++i) {
-		cout << hex << setw(2) << setfill('0') << static_cast<unsigned short>(*(p + i)) << " ";
-	}
-	cout << endl;
-
+	PRINT_MESSAGE(message);
 }
 
 BOOST_AUTO_TEST_CASE( testOnewayMessageCodec ) {
-	const size_t LENGTH = 0xbabe;
-	const MessageType TYPE = 0xcafe;
 
 	OnewayMessage message;
 	message.setLength(LENGTH);
@@ -103,41 +99,26 @@ BOOST_AUTO_TEST_CASE( testOnewayMessageCodec ) {
 	BOOST_CHECK_EQUAL(message.getLength(), LENGTH);
 	BOOST_CHECK_EQUAL(message.getType(), TYPE);
 
-	const unsigned char* p = reinterpret_cast<const unsigned char *>(&message);
-
-	for(size_t i = 0; i != sizeof(message); ++i) {
-		cout << hex << setw(2) << setfill('0') << static_cast<unsigned short>(*(p + i)) << " ";
-	}
-	cout << endl;
-
+	PRINT_MESSAGE(message);
 }
 
 BOOST_AUTO_TEST_CASE( testTwowayMessageCodec ) {
-	const size_t LENGTH = 0xbabe;
-	const MessageType TYPE = 0xcafe;
 	const Correlation CORRELATION_ID = 0x7474;
 
 	TwowayMessage message;
+	message.setCorrelation(CORRELATION_ID);
 	message.setLength(LENGTH);
 	message.setType(TYPE);
-	message.setCorrelation(CORRELATION_ID);
 
 	BOOST_CHECK_EQUAL(message.getLength(), LENGTH);
 	BOOST_CHECK_EQUAL(message.getType(), TYPE);
+
 	BOOST_CHECK_EQUAL(message.getCorrelation(), CORRELATION_ID);
 
-	const unsigned char* p = reinterpret_cast<const unsigned char *>(&message);
-
-	for(size_t i = 0; i != sizeof(message); ++i) {
-		cout << hex << setw(2) << setfill('0') << static_cast<unsigned short>(*(p + i)) << " ";
-	}
-	cout << endl;
-
+	PRINT_MESSAGE(message);
 }
 
 BOOST_AUTO_TEST_CASE( testMyOnewayMessageCodec ) {
-	const size_t LENGTH = 0xbabe;
-	const MessageType TYPE = 0xcafe;
 
 	const uint_least32_t ALARM_ID = 1;
 	const uint_least32_t TIMESTAMP = time(nullptr);
@@ -147,26 +128,20 @@ BOOST_AUTO_TEST_CASE( testMyOnewayMessageCodec ) {
 	MyOnewayMessage message;
 	message.setLength(LENGTH);
 	message.setType(TYPE);
+
+	BOOST_CHECK_EQUAL(message.getLength(), LENGTH);
+	BOOST_CHECK_EQUAL(message.getType(), TYPE);
 	message.setAlarmId(ALARM_ID);
 	message.setTimestamp(TIMESTAMP);
 	message.setStatus(STATUS);
 	message.setCurrentValue(CURRENT_VALUE);
-
-	BOOST_CHECK_EQUAL(message.getLength(), LENGTH);
-	BOOST_CHECK_EQUAL(message.getType(), TYPE);
 
 	BOOST_CHECK_EQUAL(message.getAlarmId(), ALARM_ID);
 	BOOST_CHECK_EQUAL(message.getTimestamp(), TIMESTAMP);
 	BOOST_CHECK_EQUAL(message.getStatus(), STATUS);
 	BOOST_CHECK_EQUAL(message.getCurrentValue(), CURRENT_VALUE);
 
-	const unsigned char* p = reinterpret_cast<const unsigned char *>(&message);
-
-	for(size_t i = 0; i != sizeof(message); ++i) {
-		cout << hex << setw(2) << setfill('0') << static_cast<unsigned short>(*(p + i)) << " ";
-	}
-	cout << endl;
-
+	PRINT_MESSAGE(message);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
