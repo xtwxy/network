@@ -21,50 +21,68 @@ typedef uint16_t Correlation;
 
 struct MessageHeader {
 	MessageHeader() {}
-	uint16_t getLength();
+	uint16_t getLength() const;
 	void setLength(uint16_t);
 
-	MessageType getType();
-	void setType(const MessageType);
+	MessageType getTypeId() const;
+	void setTypeId(const MessageType);
 
 	boost::endian::little_uint16_buf_t length;
-	boost::endian::little_uint16_buf_t type;
+	boost::endian::little_uint16_buf_t typeId;
 };
 
 struct Message {
-	uint16_t getLength();
+	uint16_t getLength() const;
 	void setLength(uint16_t);
 
-	MessageType getType();
-	void setType(const MessageType);
+	MessageType getTypeId() const;
+	void setTypeId(const MessageType);
 
 	MessageHeader header;
 };
 
+template<typename T>
 struct OnewayMessage : public Message {
+	bool isOneway() const { return true; };
+
+	T payload;
 };
 
+template<typename T>
 struct TwowayMessage : public Message {
-
-	Correlation getCorrelation();
-	void setCorrelation(Correlation c);
+	Correlation getCorrelation() const { return correlation.value(); }
+	void setCorrelation(Correlation c) { correlation = c; }
+	bool isOneway() const { return false; }
 
 	boost::endian::little_uint16_buf_t correlation;
+	T payload;
 };
-
-typedef boost::shared_ptr<Message> MessagePtr;
-typedef boost::function<MessagePtr (MessageType)> MessageCreator;
 
 class MessageFactory {
 public:
 	MessageFactory();
-	~MessageFactory();
+	virtual ~MessageFactory();
 
-	MessagePtr createMessage(const MessageType);
-private:
-	std::map<MessageType, MessageCreator> msgCreators;
+	virtual Message* createMessage(const MessageType) = 0;
+	virtual void deleteMessage(const Message*) = 0;
+	virtual void setMessageTypeId(const MessageType) = 0;
 };
 
+class CodecMessageFactory : public MessageFactory {
+public:
+	Message* createMessage(const MessageType);
+	void deleteMessage(const Message*);
+	void setMessageTypeId(const MessageType);
+
+	void add(MessageFactory*);
+	static CodecMessageFactory& getInstance();
+private:
+	CodecMessageFactory();
+	virtual ~CodecMessageFactory();
+	std::map<MessageType, MessageFactory*> delegates;
+	static MessageType typeCount;
+	static CodecMessageFactory instance;
+};
 
 } // namespace CallProtocol
 
