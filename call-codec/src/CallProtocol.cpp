@@ -50,36 +50,17 @@ CodecMessageFactory::~CodecMessageFactory() {
 
 }
 
-Message* CodecMessageFactory::createMessage(const MessageType type) {
+MessagePtr CodecMessageFactory::createMessage(const MessageType type) const {
 	auto pos = delegates.find(type);
 	if(pos != delegates.end()) {
-		return pos->second->createMessage(type);
+		return pos->second->createMessage();
 	}
 	return nullptr;
 }
 
-void CodecMessageFactory::deleteMessage(const Message* message) {
-	auto pos = delegates.find(message->getTypeId());
-	if(pos != delegates.end()) {
-		pos->second->deleteMessage(message);
-	}
+void CodecMessageFactory::add(const MessageType type, MessageFactoryPtr f) {
+	delegates.insert(std::make_pair(type, f));
 }
-
-void CodecMessageFactory::setMessageTypeId(const MessageType) {
-	assert(false);
-}
-
-void CodecMessageFactory::add(MessageFactory* f) {
-	delegates.insert(std::make_pair(typeCount++, f));
-}
-
-MessageType CodecMessageFactory::typeCount = 0;
-CodecMessageFactory CodecMessageFactory::instance;
-
-CodecMessageFactory& CodecMessageFactory::getInstance() {
-	return CodecMessageFactory::instance;
-}
-
 
 } // namespace CallProtocol
 

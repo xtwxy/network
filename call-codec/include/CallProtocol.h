@@ -19,6 +19,12 @@ namespace CallProtocol {
 typedef uint16_t MessageType;
 typedef uint16_t Correlation;
 
+class Message;
+class MessageFactory;
+
+typedef boost::shared_ptr<Message> MessagePtr;
+typedef boost::shared_ptr<MessageFactory> MessageFactoryPtr;
+
 struct MessageHeader {
 	MessageHeader() {}
 	uint16_t getLength() const;
@@ -43,6 +49,11 @@ struct Message {
 
 template<typename T>
 struct OnewayMessage : public Message {
+	typedef boost::shared_ptr<OnewayMessage> Ptr;
+	OnewayMessage() {
+		setLength(sizeof(*this));
+		setTypeId(T::TYPE_ID);
+	}
 	bool isOneway() const { return true; };
 
 	T payload;
@@ -50,6 +61,11 @@ struct OnewayMessage : public Message {
 
 template<typename T>
 struct TwowayMessage : public Message {
+	typedef boost::shared_ptr<TwowayMessage> Ptr;
+	TwowayMessage() : correlation() {
+		setLength(sizeof(*this));
+		setTypeId(T::TYPE_ID);
+	}
 	Correlation getCorrelation() const { return correlation.value(); }
 	void setCorrelation(Correlation c) { correlation = c; }
 	bool isOneway() const { return false; }
@@ -60,28 +76,22 @@ struct TwowayMessage : public Message {
 
 class MessageFactory {
 public:
+
 	MessageFactory();
 	virtual ~MessageFactory();
 
-	virtual Message* createMessage(const MessageType) = 0;
-	virtual void deleteMessage(const Message*) = 0;
-	virtual void setMessageTypeId(const MessageType) = 0;
+	virtual MessagePtr createMessage() const = 0;
 };
 
-class CodecMessageFactory : public MessageFactory {
+class CodecMessageFactory {
 public:
-	Message* createMessage(const MessageType);
-	void deleteMessage(const Message*);
-	void setMessageTypeId(const MessageType);
-
-	void add(MessageFactory*);
-	static CodecMessageFactory& getInstance();
-private:
 	CodecMessageFactory();
 	virtual ~CodecMessageFactory();
-	std::map<MessageType, MessageFactory*> delegates;
-	static MessageType typeCount;
-	static CodecMessageFactory instance;
+
+	MessagePtr createMessage(const MessageType) const;
+	void add(const MessageType, MessageFactoryPtr);
+private:
+	std::map<MessageType, MessageFactoryPtr> delegates;
 };
 
 } // namespace CallProtocol

@@ -10,14 +10,18 @@ using namespace std;
 using namespace boost;
 using namespace CallProtocol;
 
+#ifdef NDEBUG
+#define PRINT_MESSAGE(message)
+#else
 #define PRINT_MESSAGE(message) {                                                             \
 const unsigned char* p = reinterpret_cast<const unsigned char *>(&message);                  \
 cout << #message << ": " << typeid(message).name() << endl;                                                                    \
 for(size_t i = 0; i != sizeof(message); ++i) {                                               \
-	cout << hex << setw(2) << setfill('0') << static_cast<unsigned short>(*(p + i)) << " ";  \
+	cout << "0x"<< hex << setw(2) << setfill('0') << static_cast<unsigned short>(*(p + i)) << ", ";  \
 }                                                                                            \
 cout << endl;                                                                                \
 }
+#endif
 
 // for all message headers.
 const size_t LENGTH = 0xbabe;
@@ -25,7 +29,7 @@ const MessageType TYPE = 0xcafe;
 
 // for all MyMessage instances.
 const uint_least32_t ALARM_ID = 1;
-const uint_least32_t TIMESTAMP = time(nullptr);
+const uint_least32_t TIMESTAMP = 0x57469994;// time(nullptr);
 const uint_least8_t STATUS = 1;
 const double CURRENT_VALUE = 1996;
 
@@ -36,8 +40,9 @@ struct MyMessage {
 	boost::endian::little_uint32_buf_t timestamp;
 	boost::endian::little_int8_buf_t status;
 	boost::endian::big_uint64_buf_t currentValue;
-	const static int TYPE_ID = 100;
+	const static MessageType TYPE_ID = 100;
 
+	MyMessage() : alarmId(), timestamp(), status(), currentValue() { }
 	uint32_t getAlarmId() const {
 		return alarmId.value();
 	}
@@ -78,34 +83,18 @@ public:
 	MyOnewayMessageFactory() : typeId() { }
 	virtual ~MyOnewayMessageFactory() { }
 
-	Message* createMessage(const MessageType t) {
-		if(t == typeId) {
-			return new OnewayMessage<MyMessage>();
-		}
-		return nullptr;
+	MessagePtr createMessage() const {
+		return boost::make_shared<OnewayMessage<MyMessage> >();
 	}
-	void deleteMessage(const Message* m) {
-		if(m->getTypeId() == typeId) {
-			const OnewayMessage<MyMessage>* om =
-					reinterpret_cast<const OnewayMessage<MyMessage>*>(m);
-			if(om != nullptr) {
-				delete om;
-			} else {
-				assert(false);
-			}
-		} else {
-			assert(false);
-		}
-	};
-	void setMessageTypeId(const MessageType t) { typeId = t; }
 private:
 	MessageType typeId;
 };
 
+CodecMessageFactory messageFactory;
 struct MyConfig {
     MyConfig()   {
     	std::cout << "global setup\n";
-    	CodecMessageFactory::getInstance().add(new MyOnewayMessageFactory());
+    	messageFactory.add(MyMessage::TYPE_ID, boost::make_shared<MyOnewayMessageFactory>());
     }
     ~MyConfig()  { std::cout << "global teardown\n"; }
 };
@@ -121,6 +110,8 @@ BOOST_AUTO_TEST_CASE( testMessageHeaderCodec ) {
 	BOOST_CHECK_EQUAL(message.getLength(), LENGTH);
 	BOOST_CHECK_EQUAL(message.getTypeId(), TYPE);
 
+	unsigned char repr[] = { 0xbe, 0xba, 0xfe, 0xca };
+	BOOST_CHECK_EQUAL(memcmp(repr, &message, sizeof(repr)), 0);
 
 	PRINT_MESSAGE(message);
 }
@@ -133,6 +124,9 @@ BOOST_AUTO_TEST_CASE( testMessageCodec ) {
 
 	BOOST_CHECK_EQUAL(message.getLength(), LENGTH);
 	BOOST_CHECK_EQUAL(message.getTypeId(), TYPE);
+
+	unsigned char repr[] = { 0xbe, 0xba, 0xfe, 0xca };
+	BOOST_CHECK_EQUAL(memcmp(repr, &message, sizeof(repr)), 0);
 
 	PRINT_MESSAGE(message);
 }
@@ -155,6 +149,15 @@ BOOST_AUTO_TEST_CASE( testOnewayMessageCodec ) {
 	BOOST_CHECK_EQUAL(message.payload.getTimestamp(), TIMESTAMP);
 	BOOST_CHECK_EQUAL(message.payload.getStatus(), STATUS);
 	BOOST_CHECK_EQUAL(message.payload.getCurrentValue(), CURRENT_VALUE);
+
+	unsigned char repr[] = {
+			0xbe, 0xba, 0xfe, 0xca, 0x01,
+			0x00, 0x00, 0x00, 0x94, 0x99,
+			0x46, 0x57, 0x01, 0x40, 0x9f,
+			0x30, 0x00, 0x00, 0x00, 0x00,
+			0x00
+	};
+	BOOST_CHECK_EQUAL(memcmp(repr, &message, sizeof(repr)), 0);
 
 	PRINT_MESSAGE(message);
 }
@@ -183,6 +186,15 @@ BOOST_AUTO_TEST_CASE( testTwowayMessageCodec ) {
 	BOOST_CHECK_EQUAL(message.payload.getStatus(), STATUS);
 	BOOST_CHECK_EQUAL(message.payload.getCurrentValue(), CURRENT_VALUE);
 
+	unsigned char repr[] = {
+			0xbe, 0xba, 0xfe, 0xca, 0x74,
+			0x74, 0x01, 0x00, 0x00, 0x00,
+			0x94, 0x99, 0x46, 0x57, 0x01,
+			0x40, 0x9f, 0x30, 0x00, 0x00,
+			0x00, 0x00, 0x00
+	};
+	BOOST_CHECK_EQUAL(memcmp(repr, &message, sizeof(repr)), 0);
+
 	PRINT_MESSAGE(message);
 }
 
@@ -200,7 +212,48 @@ BOOST_AUTO_TEST_CASE( testMyOnewayMessageCodec ) {
 	BOOST_CHECK_EQUAL(message.getStatus(), STATUS);
 	BOOST_CHECK_EQUAL(message.getCurrentValue(), CURRENT_VALUE);
 
+	unsigned char repr[] = {
+			0x01, 0x00, 0x00, 0x00, 0x94,
+			0x99, 0x46, 0x57, 0x01, 0x40,
+			0x9f, 0x30, 0x00, 0x00, 0x00,
+			0x00, 0x00
+	};
+	BOOST_CHECK_EQUAL(memcmp(repr, &message, sizeof(repr)), 0);
+
 	PRINT_MESSAGE(message);
+}
+
+BOOST_AUTO_TEST_CASE( testMyOnewayMessageFactory ) {
+
+	MessageType TYPE_ID = MyMessage::TYPE_ID;
+	MessagePtr message = messageFactory.createMessage(MyMessage::TYPE_ID);
+
+	OnewayMessage<MyMessage>::Ptr omPtr = boost::reinterpret_pointer_cast<OnewayMessage<MyMessage> >(message);
+
+	omPtr->payload.setAlarmId(ALARM_ID);
+	omPtr->payload.setTimestamp(TIMESTAMP);
+	omPtr->payload.setStatus(STATUS);
+	omPtr->payload.setCurrentValue(CURRENT_VALUE);
+
+
+	BOOST_CHECK_EQUAL(message->getLength(), sizeof(OnewayMessage<MyMessage>));
+	BOOST_CHECK_EQUAL(message->getTypeId(), TYPE_ID);
+
+	BOOST_CHECK_EQUAL(omPtr->payload.getAlarmId(), ALARM_ID);
+	BOOST_CHECK_EQUAL(omPtr->payload.getTimestamp(), TIMESTAMP);
+	BOOST_CHECK_EQUAL(omPtr->payload.getStatus(), STATUS);
+	BOOST_CHECK_EQUAL(omPtr->payload.getCurrentValue(), CURRENT_VALUE);
+
+	unsigned char repr[] = {
+			0x15, 0x00, 0x64, 0x00, 0x01,
+			0x00, 0x00, 0x00, 0x94, 0x99,
+			0x46, 0x57, 0x01, 0x40, 0x9f,
+			0x30, 0x00, 0x00, 0x00, 0x00,
+			0x00
+	};
+	BOOST_CHECK_EQUAL(memcmp(&repr, omPtr.get(), sizeof(repr)), 0);
+
+	PRINT_MESSAGE(*omPtr);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
