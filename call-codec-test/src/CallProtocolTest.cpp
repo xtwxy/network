@@ -58,30 +58,15 @@ BOOST_AUTO_TEST_CASE( testMessageHeaderCodec ) {
 	BOOST_CHECK_EQUAL(message.getLength(), LENGTH);
 	BOOST_CHECK_EQUAL(message.getTypeId(), TYPE);
 
-	unsigned char repr[] = { 0xbe, 0xba, 0xfe, 0xca };
-	BOOST_CHECK_EQUAL(memcmp(repr, &message, sizeof(repr)), 0);
-
-	PRINT_MESSAGE(message);
-}
-
-BOOST_AUTO_TEST_CASE( testMessageCodec ) {
-
-	Message message;
-	message.setLength(LENGTH);
-	message.setTypeId(TYPE);
-
-	BOOST_CHECK_EQUAL(message.getLength(), LENGTH);
-	BOOST_CHECK_EQUAL(message.getTypeId(), TYPE);
-
-	unsigned char repr[] = { 0xbe, 0xba, 0xfe, 0xca };
-	BOOST_CHECK_EQUAL(memcmp(repr, &message, sizeof(repr)), 0);
+	unsigned char repr[] = { 0xbe, 0xba, 0xfe, 0xca, 0x00, 0x00 };
+	BOOST_CHECK_EQUAL(memcmp(repr, &message, sizeof(message)), 0);
 
 	PRINT_MESSAGE(message);
 }
 
 BOOST_AUTO_TEST_CASE( testOnewayMessageCodec ) {
 
-	OnewayMessage<MyMessage> message;
+	Message<MyMessage> message;
 	message.setLength(LENGTH);
 	message.setTypeId(TYPE);
 
@@ -99,81 +84,20 @@ BOOST_AUTO_TEST_CASE( testOnewayMessageCodec ) {
 	BOOST_CHECK_EQUAL(message.payload.getCurrentValue(), CURRENT_VALUE);
 
 	unsigned char repr[] = {
-			0xbe, 0xba, 0xfe, 0xca, 0x01,
-			0x00, 0x00, 0x00, 0x94, 0x99,
-			0x46, 0x57, 0x01, 0x40, 0x9f,
-			0x30, 0x00, 0x00, 0x00, 0x00,
-			0x00
-	};
-	BOOST_CHECK_EQUAL(memcmp(repr, &message, sizeof(repr)), 0);
-
-	PRINT_MESSAGE(message);
-}
-
-BOOST_AUTO_TEST_CASE( testTwowayMessageCodec ) {
-	const Correlation CORRELATION_ID = 0x7474;
-
-	TwowayMessage<MyMessage> message;
-	message.setCorrelation(CORRELATION_ID);
-	message.setLength(LENGTH);
-	message.setTypeId(TYPE);
-
-	BOOST_CHECK_EQUAL(message.getLength(), LENGTH);
-	BOOST_CHECK_EQUAL(message.getTypeId(), TYPE);
-
-	BOOST_CHECK_EQUAL(message.getCorrelation(), CORRELATION_ID);
-
-
-	message.payload.setAlarmId(ALARM_ID);
-	message.payload.setTimestamp(TIMESTAMP);
-	message.payload.setStatus(STATUS);
-	message.payload.setCurrentValue(CURRENT_VALUE);
-
-	BOOST_CHECK_EQUAL(message.payload.getAlarmId(), ALARM_ID);
-	BOOST_CHECK_EQUAL(message.payload.getTimestamp(), TIMESTAMP);
-	BOOST_CHECK_EQUAL(message.payload.getStatus(), STATUS);
-	BOOST_CHECK_EQUAL(message.payload.getCurrentValue(), CURRENT_VALUE);
-
-	unsigned char repr[] = {
-			0xbe, 0xba, 0xfe, 0xca, 0x74,
-			0x74, 0x01, 0x00, 0x00, 0x00,
+			0xbe, 0xba, 0xfe, 0xca, 0x00,
+			0x00, 0x01, 0x00, 0x00, 0x00,
 			0x94, 0x99, 0x46, 0x57, 0x01,
 			0x40, 0x9f, 0x30, 0x00, 0x00,
 			0x00, 0x00, 0x00
 	};
-	BOOST_CHECK_EQUAL(memcmp(repr, &message, sizeof(repr)), 0);
-
-	PRINT_MESSAGE(message);
-}
-
-BOOST_AUTO_TEST_CASE( testMyOnewayMessageCodec ) {
-
-	MyMessage message;
-
-	message.setAlarmId(ALARM_ID);
-	message.setTimestamp(TIMESTAMP);
-	message.setStatus(STATUS);
-	message.setCurrentValue(CURRENT_VALUE);
-
-	BOOST_CHECK_EQUAL(message.getAlarmId(), ALARM_ID);
-	BOOST_CHECK_EQUAL(message.getTimestamp(), TIMESTAMP);
-	BOOST_CHECK_EQUAL(message.getStatus(), STATUS);
-	BOOST_CHECK_EQUAL(message.getCurrentValue(), CURRENT_VALUE);
-
-	unsigned char repr[] = {
-			0x01, 0x00, 0x00, 0x00, 0x94,
-			0x99, 0x46, 0x57, 0x01, 0x40,
-			0x9f, 0x30, 0x00, 0x00, 0x00,
-			0x00, 0x00
-	};
-	BOOST_CHECK_EQUAL(memcmp(repr, &message, sizeof(repr)), 0);
+	BOOST_CHECK_EQUAL(memcmp(repr, &message, sizeof(message)), 0);
 
 	PRINT_MESSAGE(message);
 }
 
 BOOST_AUTO_TEST_CASE( testMyOnewayMessageFactory ) {
 
-	OnewayMessage<MyMessage> message;
+	Message<MyMessage> message;
 	message.setLength(LENGTH);
 	message.setTypeId(TYPE);
 

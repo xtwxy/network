@@ -21,58 +21,41 @@ namespace CallProtocol {
 typedef uint16_t MessageType;
 typedef uint16_t Correlation;
 
-class Message;
+struct MessageHeader;
 class MessageHandlerFactory;
-typedef boost::shared_ptr<Message> MessagePtr;
+typedef boost::shared_ptr<MessageHeader> MessagePtr;
 typedef boost::shared_ptr<MessageHandlerFactory> MessageHandlerFactoryPtr;
 
 struct MessageHeader {
-	MessageHeader() {}
+	MessageHeader() : length(), typeId(), correlation() { }
 	uint16_t getLength() const;
 	void setLength(uint16_t);
 
 	MessageType getTypeId() const;
 	void setTypeId(const MessageType);
+
+	Correlation getCorrelation() const;
+	void setCorrelation(Correlation c);
 
 	boost::endian::little_uint16_buf_t length;
 	boost::endian::little_uint16_buf_t typeId;
+	boost::endian::little_uint16_buf_t correlation;
 };
 
+template<typename Payload>
 struct Message {
-	uint16_t getLength() const;
-	void setLength(uint16_t);
+	Message() : header(), payload() { }
+	uint16_t getLength() const { return header.getLength(); }
+	void setLength(uint16_t l) { header.setLength(l); }
 
-	MessageType getTypeId() const;
-	void setTypeId(const MessageType);
+	MessageType getTypeId() const { return header.getTypeId(); }
+	void setTypeId(const MessageType t) { header.setTypeId(t); }
+
+	Correlation getCorrelation() const { return header.getCorrelation(); }
+	void setCorrelation(Correlation c) { header.setCorrelation(c); }
 
 	MessageHeader header;
-};
-
-template<typename T>
-struct OnewayMessage : public Message {
-	typedef boost::shared_ptr<OnewayMessage> Ptr;
-	OnewayMessage() {
-		setLength(sizeof(*this));
-		setTypeId(T::TYPE_ID);
-	}
-	bool isOneway() const { return true; };
-
-	T payload;
-};
-
-template<typename T>
-struct TwowayMessage : public Message {
-	typedef boost::shared_ptr<TwowayMessage> Ptr;
-	TwowayMessage() : correlation() {
-		setLength(sizeof(*this));
-		setTypeId(T::TYPE_ID);
-	}
-	Correlation getCorrelation() const { return correlation.value(); }
-	void setCorrelation(Correlation c) { correlation = c; }
-	bool isOneway() const { return false; }
-
-	boost::endian::little_uint16_buf_t correlation;
-	T payload;
+	Payload payload;
 };
 
 class MessageHandlerFactory {
