@@ -34,32 +34,24 @@ void Message::setTypeId(const MessageType t) {
 	header.setTypeId(t);
 }
 
-MessageFactory::MessageFactory() {
+MessageHandlerFactory::MessageHandlerFactory() {
 
 }
 
-MessageFactory::~MessageFactory() {
+MessageHandlerFactory::~MessageHandlerFactory() {
 
 }
 
-CodecMessageFactory::CodecMessageFactory() {
-
-}
-
-CodecMessageFactory::~CodecMessageFactory() {
-
-}
-
-MessagePtr CodecMessageFactory::createMessage(const MessageType type) const {
-	auto pos = delegates.find(type);
-	if(pos != delegates.end()) {
-		return pos->second->createMessage();
+codec::HandlerPtr MessageHandlerFactory::getHandler(const MessageType type) const {
+	auto pos = messageHandlers.find(type);
+	if(pos != messageHandlers.end()) {
+		return pos->second;
 	}
-	return nullptr;
+	throw std::invalid_argument("Invalid message type: " + type);
 }
 
-void CodecMessageFactory::add(const MessageType type, MessageFactoryPtr f) {
-	delegates.insert(std::make_pair(type, f));
+void MessageHandlerFactory::addHandler(const MessageType type, codec::HandlerPtr h) {
+	messageHandlers.insert(std::make_pair(type, h));
 }
 
 } // namespace CallProtocol

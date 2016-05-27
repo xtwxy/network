@@ -6,16 +6,12 @@
  */
 #include <boost/bind.hpp>
 #include <boost/make_shared.hpp>
-#include <boost/test/unit_test.hpp>
 
 #include "MessageCodec.h"
 
 namespace CallProtocol {
 
-MessageCodec::MessageCodec(
-		MessageFactoryPtr factory,
-		bool isClient
-		) : messageFactory(factory), isClient(isClient) {
+MessageCodec::MessageCodec() {
 
 }
 
@@ -25,7 +21,7 @@ MessageCodec::~MessageCodec() {
 
 codec::CodecPtr MessageCodec::createCodec() {
 	Ptr ptr = boost::make_shared<MessageCodec>();
-	return ptr->createCodec();
+	return ptr->getCodec();
 }
 
 codec::CodecPtr MessageCodec::getCodec() {

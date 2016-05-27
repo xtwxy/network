@@ -14,16 +14,17 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
 
+#include <Codec.h>
+
 namespace CallProtocol {
 
 typedef uint16_t MessageType;
 typedef uint16_t Correlation;
 
 class Message;
-class MessageFactory;
-
+class MessageHandlerFactory;
 typedef boost::shared_ptr<Message> MessagePtr;
-typedef boost::shared_ptr<MessageFactory> MessageFactoryPtr;
+typedef boost::shared_ptr<MessageHandlerFactory> MessageHandlerFactoryPtr;
 
 struct MessageHeader {
 	MessageHeader() {}
@@ -74,24 +75,16 @@ struct TwowayMessage : public Message {
 	T payload;
 };
 
-class MessageFactory {
+class MessageHandlerFactory {
 public:
+	typedef boost::shared_ptr<MessageHandlerFactory> Ptr;
+	MessageHandlerFactory();
+	virtual ~MessageHandlerFactory();
 
-	MessageFactory();
-	virtual ~MessageFactory();
-
-	virtual MessagePtr createMessage() const = 0;
-};
-
-class CodecMessageFactory {
-public:
-	CodecMessageFactory();
-	virtual ~CodecMessageFactory();
-
-	MessagePtr createMessage(const MessageType) const;
-	void add(const MessageType, MessageFactoryPtr);
+	void addHandler(const MessageType, codec::HandlerPtr);
+	codec::HandlerPtr getHandler(const MessageType) const;
 private:
-	std::map<MessageType, MessageFactoryPtr> delegates;
+	std::map<MessageType, codec::HandlerPtr> messageHandlers;
 };
 
 } // namespace CallProtocol

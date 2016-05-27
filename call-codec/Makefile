@@ -3,7 +3,10 @@ include ../common/Makefile.def
 TARGET = call-codec$(EXE)
 
 SOURCES = \
+    src/MessageHandler.cpp \
+    src/MessageCodec.cpp \
     src/CallProtocol.cpp \
+    ../codec/src/Codec.cpp \
     src/main.cpp 
 
 INCLUDE += -Iinclude -I../acceptor/include -I../codec/include

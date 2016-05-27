@@ -5,6 +5,8 @@
 #include <ctime>
 
 #include "CallProtocol.h"
+#include "MyMessage.h"
+#include "MyMessageHandler.h"
 
 using namespace std;
 using namespace boost;
@@ -35,66 +37,12 @@ const double CURRENT_VALUE = 1996;
 
 BOOST_AUTO_TEST_SUITE( CallProtocolTest )
 
-struct MyMessage {
-	boost::endian::little_uint32_buf_t alarmId;
-	boost::endian::little_uint32_buf_t timestamp;
-	boost::endian::little_int8_buf_t status;
-	boost::endian::big_uint64_buf_t currentValue;
-	const static MessageType TYPE_ID = 100;
-
-	MyMessage() : alarmId(), timestamp(), status(), currentValue() { }
-	uint32_t getAlarmId() const {
-		return alarmId.value();
-	}
-
-	void setAlarmId(uint32_t alarmId) {
-		this->alarmId = alarmId;
-	}
-
-	double getCurrentValue() const {
-		uint64_t v = currentValue.value();
-		return *reinterpret_cast<double*>(&v);
-	}
-
-	void setCurrentValue(double cv) {
-		uint64_t v = *reinterpret_cast<unsigned long int*>(&cv);
-		this->currentValue = v;
-	}
-
-	uint8_t getStatus() const {
-		return status.value();
-	}
-
-	void setStatus(uint8_t status) {
-		this->status = status;
-	}
-
-	uint32_t getTimestamp() const {
-		return timestamp.value();
-	}
-
-	void setTimestamp(uint32_t timestamp) {
-		this->timestamp = timestamp;
-	}
-};
-
-class MyOnewayMessageFactory: public MessageFactory {
-public:
-	MyOnewayMessageFactory() : typeId() { }
-	virtual ~MyOnewayMessageFactory() { }
-
-	MessagePtr createMessage() const {
-		return boost::make_shared<OnewayMessage<MyMessage> >();
-	}
-private:
-	MessageType typeId;
-};
-
-CodecMessageFactory messageFactory;
+MessageHandlerFactory messageFactory;
 struct MyConfig {
     MyConfig()   {
     	std::cout << "global setup\n";
-    	messageFactory.add(MyMessage::TYPE_ID, boost::make_shared<MyOnewayMessageFactory>());
+    	MyMessageHandler::Ptr handler = boost::make_shared<MyMessageHandler>();
+    	messageFactory.addHandler(MyMessage::TYPE_ID, handler->getHandler());
     }
     ~MyConfig()  { std::cout << "global teardown\n"; }
 };
@@ -225,35 +173,25 @@ BOOST_AUTO_TEST_CASE( testMyOnewayMessageCodec ) {
 
 BOOST_AUTO_TEST_CASE( testMyOnewayMessageFactory ) {
 
+	OnewayMessage<MyMessage> message;
+	message.setLength(LENGTH);
+	message.setTypeId(TYPE);
+
+	message.payload.setAlarmId(ALARM_ID);
+	message.payload.setTimestamp(TIMESTAMP);
+	message.payload.setStatus(STATUS);
+	message.payload.setCurrentValue(CURRENT_VALUE);
+
+
 	MessageType TYPE_ID = MyMessage::TYPE_ID;
-	MessagePtr message = messageFactory.createMessage(MyMessage::TYPE_ID);
+	codec::HandlerPtr handler = messageFactory.getHandler(MyMessage::TYPE_ID);
+	boost::asio::io_service ios;
+	codec::Pipeline pipeline(ios);
+	codec::Context ctx(pipeline);
 
-	OnewayMessage<MyMessage>::Ptr omPtr = boost::reinterpret_pointer_cast<OnewayMessage<MyMessage> >(message);
+	boost::any out(message);
+	handler->handle(ctx, out);
 
-	omPtr->payload.setAlarmId(ALARM_ID);
-	omPtr->payload.setTimestamp(TIMESTAMP);
-	omPtr->payload.setStatus(STATUS);
-	omPtr->payload.setCurrentValue(CURRENT_VALUE);
-
-
-	BOOST_CHECK_EQUAL(message->getLength(), sizeof(OnewayMessage<MyMessage>));
-	BOOST_CHECK_EQUAL(message->getTypeId(), TYPE_ID);
-
-	BOOST_CHECK_EQUAL(omPtr->payload.getAlarmId(), ALARM_ID);
-	BOOST_CHECK_EQUAL(omPtr->payload.getTimestamp(), TIMESTAMP);
-	BOOST_CHECK_EQUAL(omPtr->payload.getStatus(), STATUS);
-	BOOST_CHECK_EQUAL(omPtr->payload.getCurrentValue(), CURRENT_VALUE);
-
-	unsigned char repr[] = {
-			0x15, 0x00, 0x64, 0x00, 0x01,
-			0x00, 0x00, 0x00, 0x94, 0x99,
-			0x46, 0x57, 0x01, 0x40, 0x9f,
-			0x30, 0x00, 0x00, 0x00, 0x00,
-			0x00
-	};
-	BOOST_CHECK_EQUAL(memcmp(&repr, omPtr.get(), sizeof(repr)), 0);
-
-	PRINT_MESSAGE(*omPtr);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
