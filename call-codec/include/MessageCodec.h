@@ -17,6 +17,7 @@ class MessageCodec : public boost::enable_shared_from_this<MessageCodec>,
 private boost::noncopyable {
 public:
 	typedef boost::shared_ptr<MessageCodec> Ptr;
+	typedef boost::function<bool (codec::Context&, boost::any&,  std::list<boost::any>&)> Strategy;
 	MessageCodec();
 	virtual ~MessageCodec();
 
@@ -27,7 +28,12 @@ public:
 	void sessionStart(codec::Context&);
 	void sessionClose(codec::Context&);
 	void exceptionCaught(codec::Context&, const std::exception&);
+private:
+	bool decodeHeader(codec::Context& ctx, boost::any& input, std::list<boost::any>& output);
+	bool decodeBody(codec::Context& ctx, boost::any& input, std::list<boost::any>& output);
 
+	MessageHeader header;
+	Strategy strategy;
 };
 
 } /* namespace CallProtocol */
