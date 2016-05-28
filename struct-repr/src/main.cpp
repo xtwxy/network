@@ -79,8 +79,8 @@ int main(int argc, char* argv[]) {
  
   non_virtual_bytes<8>* nvbp = new non_virtual_child<8>();
   // The following statement cannot compile
-  // because both of the classes, the parent and the child, has no virtual
-  // member functions.
+  // because both the parent and the child, has no virtual
+  // member function.
   // non_virtual_child<8>* nvcp = dynamic_cast<non_virtual_child<8>*>(nvbp);
   delete nvbp;
 
