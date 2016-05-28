@@ -4,7 +4,7 @@ INCLUDE += -I/usr/include -I$(HOME)/binary/boost/include
 LIB += -L$(HOME)/binary/boost/lib -lboost_system -lpthread
 
 
-CXX_FLAGS += -O3
+CXX_FLAGS +=
 	#-O3 -DBOOST_ASIO_ENABLE_HANDLER_TRACKING -std=c++0x -fvisibility=hidden
 
 GCC_PREFIX=#mips64-linux-gnu-
@@ -40,11 +40,7 @@ ifneq (build, $(wildcard build))
 endif
 
 clean:
-ifeq ($(TARGET), $(wildcard $(TARGET)))
 	rm -f $(TARGET)
 	rm -f $(OBJECTS)
-endif
-ifeq (build, $(wildcard build))
 	rm -rf build
-endif
 
