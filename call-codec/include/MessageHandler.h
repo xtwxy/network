@@ -27,7 +27,7 @@ public:
 
 codec::HandlerPtr getHandler();
 private:
-	MessageHandlerFactory::Ptr messageFactory;
+	MessageHandlerFactory::Ptr msgHandlerFactory;
 };
 
 } /* namespace CallProtocol */

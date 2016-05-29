@@ -22,7 +22,14 @@ MessageHandler::~MessageHandler() {
 }
 
 void MessageHandler::handle(codec::Context& ctx, boost::any& msg) {
-
+  if(msg.type() == typeid(MessagePtr)) {
+    MessagePtr msgPtr = boost::any_cast<MessagePtr>(msg);
+    HandlerPtr handlerPtr = msgHandlerFactory->getHandler(msgPtr->getTypeId());
+    handlerPtr->handle(ctx, msg);
+  } else {
+    // Cannot be possible!
+    assert(false);
+  }
 }
 
 void MessageHandler::sessionStart(codec::Context& ctx) {
