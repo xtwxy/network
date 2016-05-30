@@ -20,6 +20,7 @@ namespace CallProtocol {
 
 typedef uint16_t MessageType;
 typedef uint16_t Correlation;
+typedef uint32_t ProtocolVersion;
 
 struct MessageHeader;
 class MessageHandlerFactory;

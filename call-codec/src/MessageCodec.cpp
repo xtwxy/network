@@ -51,8 +51,8 @@ void MessageCodec::encode(codec::Context& ctx, boost::any& input, std::list<boos
 	output.push_back(psb);
 }
 
-void MessageCodec::decode(codec::Context& ctx, boost::any& input, std::list<boost::any>& ouput) {
-	while(strategy());
+void MessageCodec::decode(codec::Context& ctx, boost::any& input, std::list<boost::any>& output) {
+	while(strategy(ctx, input, output));
 }
 
 void MessageCodec::sessionStart(codec::Context& ctx) {
