@@ -125,9 +125,15 @@ codec::HandlerPtr SetVersionResponseHandler::getHandler() {
 	return ptr;
 }
 
-MessageHandler::MessageHandler(MessageHandler::MessageHandlerFactoryVersions version) :
+MessageHandler::MessageHandler(const MessageHandlerFactoryVersions& version) :
 		msgHandlerFactory(), msgHandlerFactoryVersions(version) {
+	MessageHandlerFactory::Ptr messageFactoryInitial = boost::make_shared<MessageHandlerFactory>();
 
+    	SetVersionRequestHandler::Ptr requestHandler = boost::make_shared<SetVersionRequestHandler>(shared_from_this());
+    	SetVersionResponseHandler::Ptr responseHandler = boost::make_shared<SetVersionResponseHandler>(shared_from_this());
+
+    	messageFactoryInitial->addHandler(SetVersionRequest::TYPE_ID, requestHandler->getHandler());
+    	messageFactoryInitial->addHandler(SetVersionResponse::TYPE_ID, responseHandler->getHandler());
 }
 
 MessageHandler::~MessageHandler() {

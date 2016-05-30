@@ -4,10 +4,12 @@ TARGET = call-codec-test$(EXE)
 
 SOURCES = \
     ../call-codec/src/CallProtocol.cpp \
+    ../call-codec/src/MessageHandler.cpp \
     ../codec/src/Codec.cpp \
     src/MyMessage.cpp \
     src/MyMessageHandler.cpp \
     src/CallProtocolTest.cpp \
+    src/SetVersionTest.cpp \
     src/main.cpp 
 
 INCLUDE += -Iinclude -I../call-codec/include -I../codec/include

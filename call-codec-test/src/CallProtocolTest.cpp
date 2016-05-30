@@ -7,23 +7,11 @@
 #include "CallProtocol.h"
 #include "MyMessage.h"
 #include "MyMessageHandler.h"
+#include "Utils.h"
 
 using namespace std;
 using namespace boost;
 using namespace CallProtocol;
-
-#ifdef NDEBUG
-#define PRINT_MESSAGE(message)
-#else
-#define PRINT_MESSAGE(message) {                                                             \
-const unsigned char* p = reinterpret_cast<const unsigned char *>(&message);                  \
-cout << #message << ": " << typeid(message).name() << endl;                                                                    \
-for(size_t i = 0; i != sizeof(message); ++i) {                                               \
-	cout << "0x"<< hex << setw(2) << setfill('0') << static_cast<unsigned short>(*(p + i)) << ", ";  \
-}                                                                                            \
-cout << endl;                                                                                \
-}
-#endif
 
 // for all message headers.
 const size_t LENGTH = 0xbabe;
@@ -38,16 +26,16 @@ const double CURRENT_VALUE = 1996;
 BOOST_AUTO_TEST_SUITE( CallProtocolTest )
 
 MessageHandlerFactory messageFactory;
-struct MyConfig {
-    MyConfig()   {
+struct CallProtocolTestConfig {
+    CallProtocolTestConfig()   {
     	std::cout << "global setup\n";
     	MyMessageHandler::Ptr handler = boost::make_shared<MyMessageHandler>();
     	messageFactory.addHandler(MyMessage::TYPE_ID, handler->getHandler());
     }
-    ~MyConfig()  { std::cout << "global teardown\n"; }
+    ~CallProtocolTestConfig()  { std::cout << "global teardown\n"; }
 };
 
-BOOST_GLOBAL_FIXTURE( MyConfig );
+BOOST_GLOBAL_FIXTURE( CallProtocolTestConfig );
 
 BOOST_AUTO_TEST_CASE( testMessageHeaderCodec ) {
 

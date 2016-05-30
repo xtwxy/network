@@ -34,6 +34,7 @@ typedef Message<SetVersionRequest> SetVersionRequestMessage;
 typedef Message<SetVersionResponse> SetVersionResponseMessage;
 typedef boost::shared_ptr<SetVersionRequestMessage> SetVersionRequestMessagePtr;
 typedef boost::shared_ptr<SetVersionResponseMessage> SetVersionResponseMessagePtr;
+typedef std::map<ProtocolVersion, MessageHandlerFactory::Ptr> MessageHandlerFactoryVersions;
 
 class SetVersionRequestHandler : public boost::enable_shared_from_this<SetVersionRequestHandler>,
 private boost::noncopyable {
@@ -74,8 +75,7 @@ class MessageHandler : public boost::enable_shared_from_this<MessageHandler>,
 private boost::noncopyable {
 public:
 	typedef boost::shared_ptr<MessageHandler> Ptr;
-	typedef std::map<ProtocolVersion, MessageHandlerFactory::Ptr> MessageHandlerFactoryVersions;
-	MessageHandler(MessageHandler::MessageHandlerFactoryVersions version);
+	MessageHandler(const MessageHandlerFactoryVersions& version);
 	virtual ~MessageHandler();
 
 	void handle(codec::Context&, boost::any&);
@@ -87,7 +87,7 @@ public:
 	void setVersion(ProtocolVersion);
 private:
 	MessageHandlerFactory::Ptr msgHandlerFactory;
-	MessageHandlerFactoryVersions msgHandlerFactoryVersions;
+	const MessageHandlerFactoryVersions& msgHandlerFactoryVersions;
 };
 
 } /* namespace CallProtocol */
