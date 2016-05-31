@@ -12,6 +12,7 @@
 #include <boost/endian/buffers.hpp>
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/shared_array.hpp>
 #include <boost/make_shared.hpp>
 
 #include <Codec.h>
@@ -22,8 +23,14 @@ typedef uint16_t MessageType;
 typedef uint16_t Correlation;
 typedef uint32_t ProtocolVersion;
 
+typedef boost::shared_array<char> CharSequencePtr;
+
+struct MessageHeader;
+struct Message;
 class MessageHandlerFactory;
-typedef boost::shared_ptr<char> CharSequencePtr;
+
+typedef boost::shared_ptr<MessageHeader> MessageHeaderPtr;
+typedef boost::shared_ptr<Message> MessagePtr;
 typedef boost::shared_ptr<MessageHandlerFactory> MessageHandlerFactoryPtr;
 
 struct MessageHeader {

@@ -19,8 +19,8 @@ public:
 
 	typedef boost::shared_ptr<MessageCodec> Ptr;
 	typedef boost::function<bool (codec::Context&, boost::any&,  std::list<boost::any>&)> Action;
-	enum Strategy { DECODE_HEADER, DECODE_BODY };
-	MessageCodec();
+	
+  MessageCodec();
 	virtual ~MessageCodec();
 
 	static codec::CodecPtr createCodec();
@@ -34,8 +34,8 @@ private:
 	bool decodeHeader(codec::Context& ctx, boost::any& input, std::list<boost::any>& output);
 	bool decodeBody(codec::Context& ctx, boost::any& input, std::list<boost::any>& output);
 
-	MessageHeader header;
-	Strategy state;
+	MessagePtr message;
+  Action action;
 };
 
 } /* namespace CallProtocol */

@@ -26,7 +26,7 @@ void SetVersionResponse::setStatusCode(uint32_t v) {
 }
 
 SetVersionRequestHandler::SetVersionRequestHandler(MessageHandlerPtr h)
-:rootHandler(h) {
+:rootMessageHandler(h) {
 }
 
 SetVersionRequestHandler::~SetVersionRequestHandler() {
@@ -35,12 +35,13 @@ SetVersionRequestHandler::~SetVersionRequestHandler() {
 
 void SetVersionRequestHandler::handle(codec::Context& ctx, boost::any& msg) {
 	if (msg.type() == typeid(MessagePtr)) {
-		MessagePtr msgPtr = boost::any_cast<MessagePtr>(msg);
-		assert(msgPtr->getTypeId() == SetVersionRequest::TYPE_ID);
-		assert(msgPtr->getLength() == sizeof(SetVersionRequest) + sizeof(MessageHeader));
+		MessagePtr message = boost::any_cast<MessagePtr>(msg);
 
-		SetVersionRequestMessagePtr reqMsgPtr = boost::reinterpret_pointer_cast<SetVersionRequestMessage>(msgPtr);
-		SetVersionResponseMessagePtr respMsgPtr = boost::make_shared<SetVersionResponseMessage>();
+    SetVersionRequest* reqMsgPtr = reinterpret_cast<SetVersionRequest*>(message->payload.get());
+		rootMessageHandler->setVersion(reqMsgPtr->getVersion());
+
+    SetVersionResponse::Ptr respMsgPtr = boost::make_shared<SetVersionResponse>();
+    respMsgPtr->setStatusCode(SetVersionResponse::OK);
 		boost::any out = respMsgPtr;
 		ctx.write(out);
 	} else {
@@ -87,11 +88,19 @@ SetVersionResponseHandler::~SetVersionResponseHandler() {
 void SetVersionResponseHandler::handle(codec::Context& ctx, boost::any& msg) {
 	if (msg.type() == typeid(MessagePtr)) {
 		MessagePtr msgPtr = boost::any_cast<MessagePtr>(msg);
-		assert(msgPtr->getTypeId() == SetVersionRequest::TYPE_ID);
-		assert(msgPtr->getLength() == sizeof(SetVersionResponse) + sizeof(MessageHeader));
 
-		SetVersionResponseMessagePtr respMsgPtr = boost::reinterpret_pointer_cast<SetVersionResponseMessage>(msgPtr);
-		rootMessageHandler->setVersion(respMsgPtr->payload.getStatusCode());
+    SetVersionResponse* respMsgPtr = reinterpret_cast<SetVersionResponse*>(msgPtr->payload.get());
+		if(respMsgPtr->getStatusCode() == SetVersionResponse::OK) {
+      // negotiation the protocol version successful.
+      // TODO: continue with further communitions with the protocol.
+      // NOTE:
+      // 1. receiving the inbounding messages is automatically started.
+      // 2. sending, or start processing the outbounding message queue
+      // requires manually starting. 
+    } else {
+      // the protocol version requested is not available.
+      // TODO: report the error to error handler, or log the error information.
+    }
 	} else {
 		// Cannot be possible!
 		assert(false);

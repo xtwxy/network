@@ -14,6 +14,7 @@
 namespace CallProtocol {
 
 struct SetVersionRequest {
+  typedef boost::shared_ptr<SetVersionRequest> Ptr;
 	const static CallProtocol::MessageType TYPE_ID = 0;
 	boost::endian::little_uint32_buf_t version;
 	uint32_t getVersion();
@@ -21,6 +22,7 @@ struct SetVersionRequest {
 };
 
 struct SetVersionResponse {
+  typedef boost::shared_ptr<SetVersionResponse> Ptr;
 	const static CallProtocol::MessageType TYPE_ID = 1;
 	enum StatusCode { OK = 0, NOT_SUPPORTED_VERSION = 1 };
 	boost::endian::little_uint32_buf_t statusCode;
@@ -29,11 +31,6 @@ struct SetVersionResponse {
 };
 class MessageHandler;
 typedef boost::shared_ptr<MessageHandler> MessageHandlerPtr;
-
-typedef Message<SetVersionRequest> SetVersionRequestMessage;
-typedef Message<SetVersionResponse> SetVersionResponseMessage;
-typedef boost::shared_ptr<SetVersionRequestMessage> SetVersionRequestMessagePtr;
-typedef boost::shared_ptr<SetVersionResponseMessage> SetVersionResponseMessagePtr;
 typedef std::map<ProtocolVersion, MessageHandlerFactory::Ptr> MessageHandlerFactoryVersions;
 
 class SetVersionRequestHandler : public boost::enable_shared_from_this<SetVersionRequestHandler>,
@@ -50,7 +47,7 @@ public:
 
 	codec::HandlerPtr getHandler();
 private:
-	MessageHandlerPtr rootHandler;
+	MessageHandlerPtr rootMessageHandler;
 };
 
 

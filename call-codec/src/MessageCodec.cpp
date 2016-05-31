@@ -13,7 +13,8 @@
 namespace CallProtocol {
 
 MessageCodec::MessageCodec()
-:state(DECODE_HEADER) {
+  :message(boost::make_shared<Message>()),
+   action(boost::bind(&MessageCodec::decodeHeader, shared_from_this(), _1, _2, _3)) {
 
 }
 
@@ -36,30 +37,22 @@ codec::CodecPtr MessageCodec::getCodec() {
 	codec::ExceptionCaught exceptCaught = boost::bind(&MessageCodec::exceptionCaught, shared_from_this(), _1, _2);
 
 	codec::CodecPtr ptr(new codec::Codec(encoder, decoder, ssnStart, ssnClose, exceptCaught));
-
-	return ptr;
+  
+  return ptr; 
 }
 
 void MessageCodec::encode(codec::Context& ctx, boost::any& input, std::list<boost::any>& output) {
-	CharSequencePtr msg = boost::any_cast<CharSequencePtr>(input);
+  MessagePtr msg = boost::any_cast<MessagePtr>(input);
 	codec::BufferPtr psb = boost::shared_ptr<boost::asio::streambuf>();
 
-	const char* byteRepr = reinterpret_cast<const char *>(msg.get());
-	std::size_t len = msg->getLength();
-	psb->sputn(byteRepr, len);
+	psb->sputn(reinterpret_cast<const char*>(&msg->header), sizeof(msg->header));
+  psb->sputn(msg->payload.get(), (msg->getLength() - sizeof(msg->header)));
 
 	output.push_back(psb);
 }
 
 void MessageCodec::decode(codec::Context& ctx, boost::any& input, std::list<boost::any>& output) {
-	bool hasData = true;
-	do {
-		if(state == DECODE_HEADER) {
-			decodeHeader(ctx, input, output);
-		} else if(state == DECODE_BODY){
-			decodeBody(ctx, input, output);
-		}
-	} while(hasData);
+	while(action(ctx, input, output));
 }
 
 void MessageCodec::sessionStart(codec::Context& ctx) {
@@ -79,25 +72,25 @@ bool MessageCodec::decodeHeader(codec::Context& ctx, boost::any& input, std::lis
 	  if(psb->size() < sizeof(MessageHeader)) {
 		  return false;
 	  } else {
-		  psb->sgetn(reinterpret_cast<char*>(&header), sizeof(header));
-		  state = DECODE_BODY;
+		  psb->sgetn(reinterpret_cast<char*>(&message->header), sizeof(MessageHeader));
+		 
+      action = boost::bind(&MessageCodec::decodeBody, shared_from_this(), _1, _2, _3);
 	  }
 	  return true;
 }
 
 bool MessageCodec::decodeBody(codec::Context& ctx, boost::any& input, std::list<boost::any>& output) {
 	  codec::BufferPtr psb = boost::any_cast<codec::BufferPtr>(input);
-	  const std::size_t length = (header.getLength() - sizeof(MessageHeader));
+	  const std::size_t length = (message->header.getLength() - sizeof(MessageHeader));
 	  if(psb->size() < length) {
 		  return false;
 	  } else {
-		  char *cp = new char[header.getLength()];
-		  memcpy(cp, &header, sizeof(MessageHeader));
-		  psb->sgetn(cp + sizeof(MessageHeader), length);
-		  CharSequencePtr msg;
-		  msg.reset(reinterpret_cast<MessageHeader*>(cp));
-		  output.push_back(msg);
-		  state = DECODE_HEADER;
+		  message->payload.reset(new char[length]);
+		  psb->sgetn(message->payload.get(), length);
+		  output.push_back(message);
+		  
+      action = boost::bind(&MessageCodec::decodeHeader, shared_from_this(), _1, _2, _3);
+      message = boost::make_shared<Message>();
 	  }
 	  return true;
 }
