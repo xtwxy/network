@@ -22,9 +22,8 @@ typedef uint16_t MessageType;
 typedef uint16_t Correlation;
 typedef uint32_t ProtocolVersion;
 
-struct MessageHeader;
 class MessageHandlerFactory;
-typedef boost::shared_ptr<MessageHeader> MessagePtr;
+typedef boost::shared_ptr<char> CharSequencePtr;
 typedef boost::shared_ptr<MessageHandlerFactory> MessageHandlerFactoryPtr;
 
 struct MessageHeader {
@@ -43,7 +42,16 @@ struct MessageHeader {
 	boost::endian::little_uint16_buf_t correlation;
 };
 
-template<typename Payload>
+class Payload {
+public:
+	typedef boost::shared_ptr<Payload> Ptr;
+	Payload () { }
+	virtual ~Payload() { }
+
+	virtual void load(std::streambuf&) = 0;
+	virtual void store(std::streambuf&) = 0;
+};
+
 struct Message {
 	Message() : header(), payload() { }
 	uint16_t getLength() const { return header.getLength(); }
@@ -56,7 +64,7 @@ struct Message {
 	void setCorrelation(Correlation c) { header.setCorrelation(c); }
 
 	MessageHeader header;
-	Payload payload;
+	CharSequencePtr payload;
 };
 
 class MessageHandlerFactory {

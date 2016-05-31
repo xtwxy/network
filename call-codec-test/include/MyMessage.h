@@ -23,7 +23,7 @@ struct MyMessage {
 
 	boost::endian::little_uint32_buf_t alarmId;
 	boost::endian::little_uint32_buf_t timestamp;
-	boost::endian::little_int8_buf_t status;
+	boost::endian::little_uint8_buf_t status;
 	boost::endian::big_uint64_buf_t currentValue;
 	const static CallProtocol::MessageType TYPE_ID = 100;
 };
