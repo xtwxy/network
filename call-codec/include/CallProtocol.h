@@ -52,7 +52,7 @@ struct MessageHeader {
 	Correlation getCorrelation() const;
 	void setCorrelation(Correlation c);
 
-	boost::endian::little_uint16_buf_t length;
+	boost::endian::little_uint32_buf_t length;
 	boost::endian::little_uint16_buf_t typeId;
 	boost::endian::little_uint16_buf_t correlation;
 };
