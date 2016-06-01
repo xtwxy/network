@@ -19,11 +19,11 @@ public:
 
 	typedef boost::shared_ptr<MessageCodec> Ptr;
 	typedef boost::function<bool (codec::Context&, boost::any&,  std::list<boost::any>&)> Action;
-	
-  MessageCodec();
+
+	MessageCodec(PayloadFactoryPtr);
 	virtual ~MessageCodec();
 
-	static codec::CodecPtr createCodec();
+	static codec::CodecPtr createCodec(PayloadFactoryPtr);
 	codec::CodecPtr getCodec();
 	void encode(codec::Context&, boost::any&, std::list<boost::any>&);
 	void decode(codec::Context&, boost::any&, std::list<boost::any>&);
@@ -35,7 +35,8 @@ private:
 	bool decodeBody(codec::Context& ctx, boost::any& input, std::list<boost::any>& output);
 
 	MessagePtr message;
-  Action action;
+	Action action;
+	PayloadFactoryPtr payloadFactory;
 };
 
 } /* namespace CallProtocol */

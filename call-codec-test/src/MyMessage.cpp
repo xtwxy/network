@@ -44,3 +44,24 @@ void MyMessage::setTimestamp(uint32_t timestamp) {
 	this->timestamp = timestamp;
 }
 
+void MyMessage::load(std::streambuf& sb) {
+	sb.sgetn(reinterpret_cast<char*>(&alarmId), sizeof(alarmId));
+	sb.sgetn(reinterpret_cast<char*>(&timestamp), sizeof(timestamp));
+	sb.sgetn(reinterpret_cast<char*>(&status), sizeof(status));
+	sb.sgetn(reinterpret_cast<char*>(&currentValue), sizeof(currentValue));
+}
+
+void MyMessage::store(std::streambuf& sb) {
+	sb.sputn(alarmId.data(), sizeof(alarmId));
+	sb.sputn(timestamp.data(), sizeof(timestamp));
+	sb.sputn(status.data(), sizeof(status));
+	sb.sputn(currentValue.data(), sizeof(currentValue));
+}
+
+std::size_t MyMessage::size() {
+	return sizeof(alarmId)
+			+ sizeof(timestamp)
+			+ sizeof(status)
+			+ sizeof(currentValue);
+}
+

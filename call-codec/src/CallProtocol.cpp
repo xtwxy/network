@@ -2,6 +2,18 @@
 
 namespace CallProtocol {
 
+MessageHeader::MessageHeader() {
+
+}
+
+MessageHeader::MessageHeader(uint16_t len,
+			MessageType type,
+			Correlation c)
+	: length(len),
+	  typeId(type),
+	  correlation(c) {
+
+}
 uint16_t MessageHeader::getLength() const {
 	return length.value();
 }
@@ -26,26 +38,70 @@ void MessageHeader::setCorrelation(Correlation c) {
 	correlation = c;
 }
 
-MessageHandlerFactory::MessageHandlerFactory() {
+Payload::Payload () {
 
 }
 
-MessageHandlerFactory::~MessageHandlerFactory() {
+Payload::~Payload() {
 
 }
 
-codec::HandlerPtr MessageHandlerFactory::getHandler(
-		const MessageType type) const {
-	auto pos = messageHandlers.find(type);
-	if (pos != messageHandlers.end()) {
-		return pos->second;
+boost::any Payload::any() {
+	return boost::any(shared_from_this());
+}
+
+PayloadFactory::PayloadFactory() {
+
+}
+PayloadFactory::~PayloadFactory() {
+
+}
+
+void PayloadFactory::addCreator(const MessageType t, PayloadCreator c) {
+	payloadCreators.insert(std::make_pair(t, c));
+}
+PayloadPtr PayloadFactory::createPayload(const MessageType t) const {
+	auto it = payloadCreators.find(t);
+	if(it != payloadCreators.end()) {
+		return it->second(t);
 	}
-	throw std::invalid_argument("Invalid message type: " + type);
+	throw std::invalid_argument("Invalid message type: " + t);
 }
 
-void MessageHandlerFactory::addHandler(const MessageType type,
-		codec::HandlerPtr h) {
-	messageHandlers.insert(std::make_pair(type, h));
+Message::Message() {
+
+}
+
+Message::Message(uint16_t len,
+			MessageType type,
+			Correlation c,
+			Payload::Ptr payload)
+	: header(len, type, c), payload(payload) {
+
+}
+
+uint16_t Message::getLength() const {
+	return header.getLength();
+}
+
+void Message::setLength(uint16_t l) {
+	header.setLength(l);
+}
+
+MessageType Message::getTypeId() const {
+	return header.getTypeId();
+}
+
+void Message::setTypeId(const MessageType t) {
+	header.setTypeId(t);
+}
+
+Correlation Message::getCorrelation() const {
+	return header.getCorrelation();
+}
+
+void Message::setCorrelation(Correlation c) {
+	header.setCorrelation(c);
 }
 
 } // namespace CallProtocol

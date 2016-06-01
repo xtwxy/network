@@ -12,9 +12,10 @@
 
 namespace CallProtocol {
 
-MessageCodec::MessageCodec()
+MessageCodec::MessageCodec(PayloadFactoryPtr factory)
   :message(boost::make_shared<Message>()),
-   action(boost::bind(&MessageCodec::decodeHeader, shared_from_this(), _1, _2, _3)) {
+   action(boost::bind(&MessageCodec::decodeHeader, shared_from_this(), _1, _2, _3)),
+   payloadFactory(factory) {
 
 }
 
@@ -22,8 +23,8 @@ MessageCodec::~MessageCodec() {
 
 }
 
-codec::CodecPtr MessageCodec::createCodec() {
-	Ptr ptr = boost::make_shared<MessageCodec>();
+codec::CodecPtr MessageCodec::createCodec(PayloadFactoryPtr factory) {
+	Ptr ptr = boost::make_shared<MessageCodec>(factory);
 	return ptr->getCodec();
 }
 
@@ -42,11 +43,11 @@ codec::CodecPtr MessageCodec::getCodec() {
 }
 
 void MessageCodec::encode(codec::Context& ctx, boost::any& input, std::list<boost::any>& output) {
-  MessagePtr msg = boost::any_cast<MessagePtr>(input);
+	MessagePtr msg = boost::any_cast<MessagePtr>(input);
 	codec::BufferPtr psb = boost::shared_ptr<boost::asio::streambuf>();
 
 	psb->sputn(reinterpret_cast<const char*>(&msg->header), sizeof(msg->header));
-  psb->sputn(msg->payload.get(), (msg->getLength() - sizeof(msg->header)));
+	msg->payload->store(*psb);
 
 	output.push_back(psb);
 }
@@ -85,12 +86,12 @@ bool MessageCodec::decodeBody(codec::Context& ctx, boost::any& input, std::list<
 	  if(psb->size() < length) {
 		  return false;
 	  } else {
-		  message->payload.reset(new char[length]);
-		  psb->sgetn(message->payload.get(), length);
+		  message->payload = payloadFactory->createPayload(message->header.getTypeId());
+		  message->payload->load(*psb);
 		  output.push_back(message);
 		  
-      action = boost::bind(&MessageCodec::decodeHeader, shared_from_this(), _1, _2, _3);
-      message = boost::make_shared<Message>();
+		  action = boost::bind(&MessageCodec::decodeHeader, shared_from_this(), _1, _2, _3);
+		  message = boost::make_shared<Message>();
 	  }
 	  return true;
 }

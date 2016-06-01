@@ -26,15 +26,23 @@ typedef uint32_t ProtocolVersion;
 typedef boost::shared_array<char> CharSequencePtr;
 
 struct MessageHeader;
+class Payload;
+class PayloadFactory;
 struct Message;
 class MessageHandlerFactory;
 
 typedef boost::shared_ptr<MessageHeader> MessageHeaderPtr;
+typedef boost::shared_ptr<Payload> PayloadPtr;
+typedef boost::shared_ptr<PayloadFactory> PayloadFactoryPtr;
 typedef boost::shared_ptr<Message> MessagePtr;
-typedef boost::shared_ptr<MessageHandlerFactory> MessageHandlerFactoryPtr;
+
+typedef boost::function<PayloadPtr (const MessageType)> PayloadCreator;
 
 struct MessageHeader {
-	MessageHeader() : length(), typeId(), correlation() { }
+	MessageHeader();
+	MessageHeader(uint16_t len,
+			MessageType type,
+			Correlation c);
 	uint16_t getLength() const;
 	void setLength(uint16_t);
 
@@ -49,41 +57,46 @@ struct MessageHeader {
 	boost::endian::little_uint16_buf_t correlation;
 };
 
-class Payload {
+class Payload : public boost::enable_shared_from_this<Payload> {
 public:
 	typedef boost::shared_ptr<Payload> Ptr;
-	Payload () { }
-	virtual ~Payload() { }
+	Payload ();
+	virtual ~Payload();
 
+	boost::any any();
 	virtual void load(std::streambuf&) = 0;
 	virtual void store(std::streambuf&) = 0;
+	virtual std::size_t size() = 0;
 };
 
 struct Message {
-	Message() : header(), payload() { }
-	uint16_t getLength() const { return header.getLength(); }
-	void setLength(uint16_t l) { header.setLength(l); }
+	Message();
+	Message(uint16_t len,
+			MessageType type,
+			Correlation c,
+			Payload::Ptr payload);
+	uint16_t getLength() const;
+	void setLength(uint16_t l);
 
-	MessageType getTypeId() const { return header.getTypeId(); }
-	void setTypeId(const MessageType t) { header.setTypeId(t); }
+	MessageType getTypeId() const;
+	void setTypeId(const MessageType t);
 
-	Correlation getCorrelation() const { return header.getCorrelation(); }
-	void setCorrelation(Correlation c) { header.setCorrelation(c); }
+	Correlation getCorrelation() const;
+	void setCorrelation(Correlation c);
 
 	MessageHeader header;
-	CharSequencePtr payload;
+	Payload::Ptr payload;
 };
 
-class MessageHandlerFactory {
+class PayloadFactory {
 public:
-	typedef boost::shared_ptr<MessageHandlerFactory> Ptr;
-	MessageHandlerFactory();
-	virtual ~MessageHandlerFactory();
+	PayloadFactory();
+	virtual ~PayloadFactory();
 
-	void addHandler(const MessageType, codec::HandlerPtr);
-	codec::HandlerPtr getHandler(const MessageType) const;
+	void addCreator(const MessageType, const PayloadCreator);
+	PayloadPtr createPayload(const MessageType) const;
 private:
-	std::map<MessageType, codec::HandlerPtr> messageHandlers;
+	std::map<MessageType, PayloadCreator> payloadCreators;
 };
 
 } // namespace CallProtocol

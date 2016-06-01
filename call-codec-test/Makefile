@@ -9,7 +9,6 @@ SOURCES = \
     src/MyMessage.cpp \
     src/MyMessageHandler.cpp \
     src/CallProtocolTest.cpp \
-    src/SetVersionTest.cpp \
     src/main.cpp 
 
 INCLUDE += -Iinclude -I../call-codec/include -I../codec/include

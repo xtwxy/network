@@ -6,6 +6,18 @@
 #include <algorithm>
 #include <boost/any.hpp>
 
+class A {
+public:
+	A() { }
+	~A() { }
+};
+
+class B : public A {
+public:
+	B() { }
+	~B() { }
+};
+
 int main(int argc, char* argv[]) {
 
   std::vector<char> buff = {1,2,3,4,5,6,7,8,9,0};
@@ -36,6 +48,11 @@ int main(int argc, char* argv[]) {
   std::cout << "typeid(std::vector<char>).name() == " << typeid(std::vector<char>).name() << std::endl;
   std::cout << "(ldata.type() == typeid(std::vector<char>)) == " << (ldata.type() == typeid(std::vector<char>)) << std::endl;
   std::cout << "boost::any_cast<std::vector<char> >(ldata).size() = " << boost::any_cast<std::vector<char> >(ldata).size() << std::endl;
+
+  B b;
+  boost::any anyB = b;
+  boost::any anyA = boost::any_cast<A>(anyB);
+
 
   return EXIT_SUCCESS;
 }

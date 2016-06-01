@@ -10,7 +10,10 @@
 
 #include "CallProtocol.h"
 
-struct MyMessage {
+class MyMessage : public CallProtocol::Payload {
+public:
+	typedef boost::shared_ptr<MyMessage> Ptr;
+	const static CallProtocol::MessageType TYPE_ID = 100;
 	MyMessage();
 	uint32_t getAlarmId() const;
 	void setAlarmId(uint32_t alarmId);
@@ -21,11 +24,15 @@ struct MyMessage {
 	uint32_t getTimestamp() const;
 	void setTimestamp(uint32_t timestamp);
 
+	void load(std::streambuf&);
+	void store(std::streambuf&);
+	std::size_t size();
+
+private:
 	boost::endian::little_uint32_buf_t alarmId;
 	boost::endian::little_uint32_buf_t timestamp;
 	boost::endian::little_uint8_buf_t status;
 	boost::endian::big_uint64_buf_t currentValue;
-	const static CallProtocol::MessageType TYPE_ID = 100;
 };
 
 #endif /* INCLUDE_MYMESSAGE_H_ */
