@@ -9,7 +9,9 @@
 #define INCLUDE_SIGNALSTATE_H_
 
 #include <ctime>
+#include <map>
 #include <boost/date_time/local_time/local_time.hpp>
+#include <boost/noncopyable.hpp>
 
 #include "CallProtocol.h"
 
@@ -31,30 +33,31 @@ private:
 	const std::string value;
 };
 
-class SignalValue : public CallProtocol::Payload {
+class SignalState : public CallProtocol::Payload,
+boost::noncopyable {
 public:
-	SignalValue();
-	virtual ~SignalValue();
+	SignalState();
+	virtual ~SignalState();
 
 	SignalType getType() const;
 	bool expired() const;
 	bool timeout() const;
 
-	void addSubscriber(codec::PipelinePtr);
+	void addSubscriber(CallProtocal::Correlation, codec::PipelinePtr);
 protected:
-	void notifySubscriber();
+	void notifySubscribers();
 private:
 	const SignalType signalType;
 	const time_t timeoutSeconds;
 	const time_t expireSeconds;
 	boost::posix_time::ptime timestamp;
-	std::vector<codec::PipelinePtr> subscribers;
+	std::map<CallProtocol::Correlation, codec::PipelinePtr> subscribers;
 };
 
-class AnalogValue : public SignalValue {
+class AnalogState : public SignalState {
 public:
-	AnalogValue();
-	virtual ~AnalogValue();
+	AnalogState();
+	virtual ~AnalogState();
 
 	void setValue(double);
 	double getValue() const;
@@ -66,10 +69,10 @@ private:
 	double value;
 };
 
-class BooleanValue : public SignalValue {
+class BooleanState : public SignalState {
 public:
-	BooleanValue();
-	virtual ~BooleanValue();
+	BooleanState();
+	virtual ~BooleanState();
 
 	void setValue(bool);
 	bool getValue() const;
@@ -81,9 +84,9 @@ private:
 	bool value;
 };
 
-class StringValue :public CallProtocol::Payload {
+class StringState :public CallProtocol::Payload {
 public:
-	StringValue();
+	StringState();
 
 	void setValue(const std::string&);
 	const std::string& getValue() const;
@@ -93,14 +96,6 @@ public:
 	std::size_t size();
 private:
 	std::string value;
-};
-
-class SignalState {
-public:
-	SignalState();
-	~SignalState();
-private:
-
 };
 
 } /* namespace DataObjects */
