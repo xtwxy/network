@@ -56,14 +56,14 @@ StateEvent& StateEvent::operator=(const StateEvent& r) {
 }
 
 bool StateEvent::operator==(const StateEvent& r) {
-	return (*before == *r.before && *after == *r.after);
+	return (*(before) == *(r.before)) && (*(after) == *(r.after));
 }
 
 StateListener::StateListener() {
 
 }
 
-virtual StateListener::~StateListener() {
+
 
 }
 
@@ -96,18 +96,15 @@ SignalState::~SignalState() {
 
 }
 
-SignalState::SignalState(const SignalState& r) {
-	this->signalType = r.signalType;
-	this->timeoutSeconds = r.timeoutSeconds;
-	this->expireSeconds = r.expireSeconds;
-	this->timestamp = r.timestamp;
-	this->listeners = r.listeners;
+SignalState::SignalState(const SignalState& r) 
+: signalType(r.signalType),
+  timeoutSeconds(r.timeoutSeconds),
+  expireSeconds(r.expireSeconds),
+  timestamp(r.timestamp),
+  listeners(r.listeners) {
 }
 
 SignalState& SignalState::operator=(const SignalState& r) {
-	this->signalType = r.signalType;
-	this->timeoutSeconds = r.timeoutSeconds;
-	this->expireSeconds = r.expireSeconds;
 	this->timestamp = r.timestamp;
 	this->listeners = r.listeners;
 
@@ -126,7 +123,7 @@ bool SignalState::expired() const {
 
 bool SignalState::timeout() const {
 	boost::posix_time::ptime ts = boost::posix_time::second_clock::local_time();
-	boost::posix_time::time_duration td = ts - timestamp;
+	boost::posix_time::time_duration td = ts - getTimestamp();
 	return (td.total_seconds() > timeoutSeconds);
 }
 
@@ -139,6 +136,14 @@ void SignalState::fireStateChange(SignalStatePtr before, SignalStatePtr after) {
   for(auto& listener : listeners) {
 	  listener->stateChanged(event);
   }
+}
+
+void SignalState::updateTimestamp() {
+	timestamp = boost::posix_time::second_clock::local_time();
+}
+
+const boost::posix_time::ptime& SignalState::getTimestamp() const {
+  return timestamp;
 }
 
 AnalogState::AnalogState()
@@ -172,8 +177,8 @@ AnalogState& AnalogState::operator=(const AnalogState& r) {
 void AnalogState::setValue(double v) {
 	SignalStatePtr before = clone();
 	value =  v;
-	timestamp = boost::posix_time::second_clock::local_time();
-	SignalStatePtr after =  clone();
+  updateTimestamp();	
+  SignalStatePtr after =  clone();
 
 	fireStateChange(before, after);
 }
@@ -236,7 +241,6 @@ BooleanState& BooleanState::operator=(const BooleanState& r) {
 void BooleanState::setValue(bool v) {
 	SignalStatePtr before = clone();
 	value =  v;
-	timestamp = boost::posix_time::second_clock::local_time();
 	SignalStatePtr after =  clone();
 
 	fireStateChange(before, after);
@@ -300,7 +304,7 @@ StringState& StringState::operator=(const StringState& r) {
 void StringState::setValue(const string& v) {
 	SignalStatePtr before = clone();
 	value =  v;
-	timestamp = boost::posix_time::second_clock::local_time();
+	updateTimestamp();
 	SignalStatePtr after =  clone();
 
 	fireStateChange(before, after);

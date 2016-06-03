@@ -71,6 +71,7 @@ public:
 	SignalType getType() const;
 	bool expired() const;
 	bool timeout() const;
+  const boost::posix_time::ptime& getTimestamp() const;
 
 	void addChangeListener(StateListenerPtr);
 protected:
@@ -88,11 +89,12 @@ protected:
 
 	void fireStateChange(SignalStatePtr before, SignalStatePtr after);
 	virtual SignalStatePtr clone() = 0;
+  void updateTimestamp();
 private:
 	const SignalType signalType;
 	const time_t timeoutSeconds;
 	const time_t expireSeconds;
-	boost::posix_time::ptime timestamp;
+  boost::posix_time::ptime timestamp;
 	std::vector<StateListenerPtr> listeners;
 };
 
