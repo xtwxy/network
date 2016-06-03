@@ -15,14 +15,21 @@ namespace DataObjects {
 
 SignalId::SignalId() { }
 
-SignalId::SignalId(const std::string r) { }
+SignalId::SignalId(const std::string r) 
+: value(r) { 
 
-SignalId::SignalId(const SignalId& r) { }
+}
 
-SignalId::~SignalId() { }
+SignalId::SignalId(const SignalId& r)
+: value(r.value) { 
+
+}
+
+SignalId::~SignalId() { 
+
+}
 
 SignalId& SignalId::operator=(const SignalId& r) {
-	this->value = r.value;
 	return *this;
 }
 
@@ -34,36 +41,25 @@ bool SignalId::operator<(const SignalId& r) const {
 	return (this->value < r.value);
 }
 
-StateEvent::StateEvent() {
-
+StateEvent::StateEvent(const StateEvent& r) 
+: before(r.before),
+  after(r.after) {
 }
 
-StateEvent::StateEvent(const StateEvent& r) {
-	this->before = r.before;
-	this->after = r.after;
-}
+StateEvent::StateEvent(const SignalStatePtr before, const SignalStatePtr after) 
+: before(before), after(after) {
 
-StateEvent::StateEvent(const SignalStatePtr before, const SignalStatePtr after) {
-	this->before = before;
-	this->after = after;
 }
 
 StateEvent& StateEvent::operator=(const StateEvent& r) {
-	this->before = r.before;
-	this->after = r.after;
-
 	return *this;
-}
-
-bool StateEvent::operator==(const StateEvent& r) {
-	return (*(before) == *(r.before)) && (*(after) == *(r.after));
 }
 
 StateListener::StateListener() {
 
 }
 
-
+StateListener::~StateListener() {
 
 }
 

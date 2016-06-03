@@ -65,7 +65,7 @@ PayloadPtr PayloadFactory::createPayload(const MessageType t) const {
 	if(it != payloadCreators.end()) {
 		return it->second(t);
 	}
-	throw std::invalid_argument("Invalid message type: " + t);
+	throw std::invalid_argument("Invalid message type: ");
 }
 
 Message::Message() {

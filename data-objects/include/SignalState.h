@@ -41,12 +41,10 @@ typedef boost::shared_ptr<SignalState> SignalStatePtr;
 
 struct StateEvent {
 public:
-	StateEvent();
 	StateEvent(const StateEvent&);
 	StateEvent(const SignalStatePtr before, const SignalStatePtr after);
 
 	StateEvent& operator=(const StateEvent&);
-	bool operator==(const StateEvent&);
 
 	const SignalStatePtr before;
 	const SignalStatePtr after;
@@ -54,7 +52,7 @@ public:
 
 typedef boost::shared_ptr<StateEvent> StateEventPtr;
 
-class StateListener : private boost::noncopyable<StateListener> {
+class StateListener : private boost::noncopyable { 
 public:
 	StateListener();
 	virtual ~StateListener();
@@ -87,7 +85,11 @@ protected:
 	SignalState(const SignalState&);
 	SignalState& operator=(const SignalState&);
 
-	void fireStateChange(SignalStatePtr before, SignalStatePtr after);
+	//virtual void load(std::streambuf&) = 0;
+	//virtual void store(std::streambuf&) = 0;
+	//virtual std::size_t size() = 0;
+	
+  void fireStateChange(SignalStatePtr before, SignalStatePtr after);
 	virtual SignalStatePtr clone() = 0;
   void updateTimestamp();
 private:
@@ -108,9 +110,9 @@ public:
 	void setValue(double);
 	double getValue() const;
 
-	void load(std::streambuf&);
-	void store(std::streambuf&);
-	std::size_t size();
+	virtual void load(std::streambuf&);
+	virtual void store(std::streambuf&);
+	virtual std::size_t size();
 	SignalStatePtr clone();
 private:
 	double value;

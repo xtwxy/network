@@ -11,7 +11,7 @@ SOURCES = \
 
 INCLUDE += -Iinclude -I../acceptor/include -I../codec/include
 
-LIB += -lpthread -L/usr/local/library -lrestbed 
+LIB += -lpthread -L/usr/local/library 
 
 CXX_FLAGS += -std=c++11 #-DPRINT_BUFFER #-DBOOST_ASIO_ENABLE_HANDLER_TRACKING
 
