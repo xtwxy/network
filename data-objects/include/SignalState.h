@@ -19,6 +19,9 @@ namespace DataObjects {
 
 enum SignalType { AI=1, DI=2, SI=3, AO=4, DO=8, SO=12 };
 
+const static time_t TIMEOUT_SECONDS = 5;
+const static time_t EXPIRE_SECONDS = 30;
+
 class SignalId : public CallProtocol::Payload {
 public:
 	SignalId();
@@ -33,31 +36,72 @@ private:
 	const std::string value;
 };
 
-class SignalState : public CallProtocol::Payload,
-boost::noncopyable {
+class SignalState;
+typedef boost::shared_ptr<SignalState> SignalStatePtr;
+
+struct StateEvent {
 public:
-	SignalState();
+	StateEvent();
+	StateEvent(const StateEvent&);
+	StateEvent(const SignalStatePtr before, const SignalStatePtr after);
+
+	StateEvent& operator=(const StateEvent&);
+	bool operator==(const StateEvent&);
+
+	const SignalStatePtr before;
+	const SignalStatePtr after;
+};
+
+typedef boost::shared_ptr<StateEvent> StateEventPtr;
+
+class StateListener : private boost::noncopyable<StateListener> {
+public:
+	StateListener();
+	virtual ~StateListener();
+
+	virtual void stateChanged(StateEventPtr) = 0;
+};
+
+typedef boost::shared_ptr<StateListener> StateListenerPtr;
+
+class SignalState : public CallProtocol::Payload {
+public:
 	virtual ~SignalState();
 
 	SignalType getType() const;
 	bool expired() const;
 	bool timeout() const;
 
-	void addSubscriber(CallProtocal::Correlation, codec::PipelinePtr);
+	void addChangeListener(StateListenerPtr);
 protected:
-	void notifySubscribers();
+	SignalState(const SignalType signalType,
+			const time_t timeoutSeconds,
+			const time_t expireSeconds,
+			const boost::posix_time::ptime& timestamp);
+	SignalState(const SignalType signalType,
+			const time_t timeoutSeconds,
+			const time_t expireSeconds,
+			const boost::posix_time::ptime& timestamp,
+			const std::vector<StateListenerPtr>& listeners);
+	SignalState(const SignalState&);
+	SignalState& operator=(const SignalState&);
+
+	void fireStateChange(SignalStatePtr before, SignalStatePtr after);
+	virtual SignalStatePtr clone() = 0;
 private:
 	const SignalType signalType;
 	const time_t timeoutSeconds;
 	const time_t expireSeconds;
 	boost::posix_time::ptime timestamp;
-	std::map<CallProtocol::Correlation, codec::PipelinePtr> subscribers;
+	std::vector<StateListenerPtr> listeners;
 };
 
 class AnalogState : public SignalState {
 public:
 	AnalogState();
+	AnalogState(const AnalogState&);
 	virtual ~AnalogState();
+	AnalogState& operator=(const AnalogState&);
 
 	void setValue(double);
 	double getValue() const;
@@ -65,6 +109,7 @@ public:
 	void load(std::streambuf&);
 	void store(std::streambuf&);
 	std::size_t size();
+	SignalStatePtr clone();
 private:
 	double value;
 };
@@ -72,7 +117,9 @@ private:
 class BooleanState : public SignalState {
 public:
 	BooleanState();
+	BooleanState(const BooleanState&);
 	virtual ~BooleanState();
+	BooleanState& operator=(const BooleanState&);
 
 	void setValue(bool);
 	bool getValue() const;
@@ -80,20 +127,25 @@ public:
 	void load(std::streambuf&);
 	void store(std::streambuf&);
 	std::size_t size();
+	SignalStatePtr clone();
 private:
 	bool value;
 };
 
-class StringState :public CallProtocol::Payload {
+class StringState :public SignalState {
 public:
 	StringState();
+	StringState(const StringState&);
+	virtual ~StringState();
+	StringState& operator=(const StringState&);
 
 	void setValue(const std::string&);
-	const std::string& getValue() const;
+	std::string getValue() const;
 
 	void load(std::streambuf&);
 	void store(std::streambuf&);
 	std::size_t size();
+	SignalStatePtr clone();
 private:
 	std::string value;
 };

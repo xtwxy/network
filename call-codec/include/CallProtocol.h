@@ -40,11 +40,11 @@ typedef boost::function<PayloadPtr (const MessageType)> PayloadCreator;
 
 struct MessageHeader {
 	MessageHeader();
-	MessageHeader(uint16_t len,
+	MessageHeader(uint32_t len,
 			MessageType type,
 			Correlation c);
-	uint16_t getLength() const;
-	void setLength(uint16_t);
+	uint32_t getLength() const;
+	void setLength(uint32_t);
 
 	MessageType getTypeId() const;
 	void setTypeId(const MessageType);
@@ -71,12 +71,12 @@ public:
 
 struct Message {
 	Message();
-	Message(uint16_t len,
+	Message(uint32_t len,
 			MessageType type,
 			Correlation c,
 			Payload::Ptr payload);
-	uint16_t getLength() const;
-	void setLength(uint16_t l);
+	uint32_t getLength() const;
+	void setLength(uint32_t l);
 
 	MessageType getTypeId() const;
 	void setTypeId(const MessageType t);

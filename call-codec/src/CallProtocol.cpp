@@ -6,7 +6,7 @@ MessageHeader::MessageHeader() {
 
 }
 
-MessageHeader::MessageHeader(uint16_t len,
+MessageHeader::MessageHeader(uint32_t len,
 			MessageType type,
 			Correlation c)
 	: length(len),
@@ -14,11 +14,11 @@ MessageHeader::MessageHeader(uint16_t len,
 	  correlation(c) {
 
 }
-uint16_t MessageHeader::getLength() const {
+uint32_t MessageHeader::getLength() const {
 	return length.value();
 }
 
-void MessageHeader::setLength(uint16_t l) {
+void MessageHeader::setLength(uint32_t l) {
 	length = l;
 }
 
@@ -72,7 +72,7 @@ Message::Message() {
 
 }
 
-Message::Message(uint16_t len,
+Message::Message(uint32_t len,
 			MessageType type,
 			Correlation c,
 			Payload::Ptr payload)
@@ -80,11 +80,11 @@ Message::Message(uint16_t len,
 
 }
 
-uint16_t Message::getLength() const {
+uint32_t Message::getLength() const {
 	return header.getLength();
 }
 
-void Message::setLength(uint16_t l) {
+void Message::setLength(uint32_t l) {
 	header.setLength(l);
 }
 
