@@ -111,6 +111,19 @@ SignalType SignalState::getType() const {
   return signalType;
 }
 
+void SignalState::load(std::streambuf&) {
+  // TODO: implement SignalState::load()
+}
+
+void SignalState::store(std::streambuf&) {
+  // TODO: implement SignalState::store()
+}
+
+std::size_t SignalState::size() {
+  // TODO: implement SignalState::size();
+  return sizeof(SignalType) + sizeof(timestamp);
+}
+
 bool SignalState::expired() const {
 	boost::posix_time::ptime ts = boost::posix_time::second_clock::local_time();
 	boost::posix_time::time_duration td = ts - timestamp;

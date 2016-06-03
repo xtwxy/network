@@ -85,9 +85,9 @@ protected:
 	SignalState(const SignalState&);
 	SignalState& operator=(const SignalState&);
 
-	//virtual void load(std::streambuf&) = 0;
-	//virtual void store(std::streambuf&) = 0;
-	//virtual std::size_t size() = 0;
+	virtual void load(std::streambuf&);
+	virtual void store(std::streambuf&);
+	virtual std::size_t size();
 	
   void fireStateChange(SignalStatePtr before, SignalStatePtr after);
 	virtual SignalStatePtr clone() = 0;
