@@ -207,7 +207,7 @@ SignalStatePtr AnalogState::clone() {
 
 BooleanState::BooleanState()
 : SignalState(
-		AI,
+		DI,
 		TIMEOUT_SECONDS,
 		EXPIRE_SECONDS,
 		boost::posix_time::ptime()),
@@ -269,9 +269,9 @@ SignalStatePtr BooleanState::clone() {
 	return ptr;
 }
 
-BooleanState::BooleanState()
+StringState::StringState()
 : SignalState(
-		AI,
+		SI,
 		TIMEOUT_SECONDS,
 		EXPIRE_SECONDS,
 		boost::posix_time::ptime()),
