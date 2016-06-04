@@ -39,14 +39,21 @@ private:
 class SignalState;
 typedef boost::shared_ptr<SignalState> SignalStatePtr;
 
-struct StateEvent {
+struct StateEvent : public CallProtocol::Payload {
 public:
 	StateEvent(const StateEvent&);
 	StateEvent(const SignalStatePtr before, const SignalStatePtr after);
 
 	StateEvent& operator=(const StateEvent&);
 
-	const SignalStatePtr before;
+	void load(std::streambuf&);
+	void store(std::streambuf&);
+	std::size_t size();
+
+  const SignalStatePtr getBefore() const;
+  const SignalStatePtr getAfter() const;
+private:
+  const SignalStatePtr before;
 	const SignalStatePtr after;
 };
 
@@ -71,6 +78,10 @@ public:
 	bool timeout() const;
   const boost::posix_time::ptime& getTimestamp() const;
 
+	virtual void load(std::streambuf&);
+	virtual void store(std::streambuf&);
+	virtual std::size_t size();
+	
 	void addChangeListener(StateListenerPtr);
 protected:
 	SignalState(const SignalType signalType,
@@ -85,10 +96,6 @@ protected:
 	SignalState(const SignalState&);
 	SignalState& operator=(const SignalState&);
 
-	virtual void load(std::streambuf&);
-	virtual void store(std::streambuf&);
-	virtual std::size_t size();
-	
   void fireStateChange(SignalStatePtr before, SignalStatePtr after);
 	virtual SignalStatePtr clone() = 0;
   void updateTimestamp();
@@ -110,9 +117,9 @@ public:
 	void setValue(double);
 	double getValue() const;
 
-	virtual void load(std::streambuf&);
-	virtual void store(std::streambuf&);
-	virtual std::size_t size();
+	void load(std::streambuf&);
+	void store(std::streambuf&);
+	std::size_t size();
 	SignalStatePtr clone();
 private:
 	double value;

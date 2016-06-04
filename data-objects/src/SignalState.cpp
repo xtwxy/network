@@ -55,6 +55,28 @@ StateEvent& StateEvent::operator=(const StateEvent& r) {
 	return *this;
 }
 
+void StateEvent::load(std::streambuf& sb) {
+  before->load(sb);
+  after->load(sb);
+}
+
+void StateEvent::store(std::streambuf& sb) {
+  before->store(sb);
+  after->store(sb);
+}
+
+std::size_t StateEvent::size() { 
+  return (before->size() + after->size());
+}
+
+const SignalStatePtr StateEvent::getBefore() const {
+
+}
+
+const SignalStatePtr StateEvent::getAfter() const {
+
+}
+
 StateListener::StateListener() {
 
 }
