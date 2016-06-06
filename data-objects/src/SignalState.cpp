@@ -41,6 +41,31 @@ bool SignalId::operator<(const SignalId& r) const {
 	return (this->value < r.value);
 }
 
+void SignalId::load(boost::asio::streambuf& sb) {
+	uint32_t len;
+	boost::endian::little_uint32_buf_t lenRepr;
+	sb.sgetn(reinterpret_cast<char*>(&lenRepr), sizeof(lenRepr));
+	len = *reinterpret_cast<uint32_t*>(&lenRepr);
+	for(size_t i = 0; i != len; ++i) {
+		char c = sb.sgetc();
+		value.push_back(c);
+	}
+}
+
+void SignalId::store(boost::asio::streambuf& sb) {
+	uint32_t len = value.length();
+	boost::endian::little_uint32_buf_t lenRepr;
+	lenRepr = len;
+	sb.sputn(lenRepr.data(), sizeof(lenRepr));
+	for(auto& c : value) {
+		sb.sputc(c);
+	}
+}
+
+std::size_t SignalId::size() {
+	return (sizeof(uint32_t) + this->value.size());
+}
+
 StateEvent::StateEvent(const StateEvent& r) 
 : before(r.before),
   after(r.after) {
@@ -55,12 +80,12 @@ StateEvent& StateEvent::operator=(const StateEvent& r) {
 	return *this;
 }
 
-void StateEvent::load(std::streambuf& sb) {
+void StateEvent::load(boost::asio::streambuf& sb) {
   before->load(sb);
   after->load(sb);
 }
 
-void StateEvent::store(std::streambuf& sb) {
+void StateEvent::store(boost::asio::streambuf& sb) {
   before->store(sb);
   after->store(sb);
 }
@@ -133,23 +158,31 @@ SignalType SignalState::getType() const {
   return signalType;
 }
 
-void SignalState::load(std::streambuf& sb) {
+void SignalState::load(boost::asio::streambuf& sb) {
 	signalType = sb.sgetc();
 	// transient: const time_t timeoutSeconds;
 	// transient: const time_t expireSeconds;
 	boost::endian::little_int64_buf_t secsRepr;
 	sb.sgetn(reinterpret_cast<char*>(&secsRepr), sizeof(secsRepr));
 	time_t s = secsRepr.value();
-	timestamp = boost::posix_time::from_time_t(s);
+	if(s == 0) {
+		timestamp = boost::posix_time::ptime();
+	} else {
+		timestamp = boost::posix_time::from_time_t(s);
+	}
 	// transient: std::vector<StateListenerPtr> listeners;
 }
 
-void SignalState::store(std::streambuf& sb) {
+void SignalState::store(boost::asio::streambuf& sb) {
 	sb.sputc(signalType);
-	tm t = to_tm(timestamp);
-	time_t secs = mktime(&t);
 	boost::endian::little_int64_buf_t secsRepr;
-	secsRepr = secs;
+	try{
+		tm t = to_tm(timestamp);
+		time_t secs = mktime(&t);
+		secsRepr = secs;
+	} catch(...) {
+		secsRepr = 0;
+	}
 	sb.sputn(reinterpret_cast<char*>(&secsRepr), sizeof(secsRepr));
 }
 
@@ -230,14 +263,14 @@ double AnalogState::getValue() const {
 	return value;
 }
 
-void AnalogState::load(std::streambuf& sb) {
+void AnalogState::load(boost::asio::streambuf& sb) {
 	SignalState::load(sb);
 	boost::endian::big_uint64_buf_t repr;
 	sb.sgetn(reinterpret_cast<char*>(&repr), sizeof(repr));
 	value = *reinterpret_cast<double*>(&repr);
 }
 
-void AnalogState::store(std::streambuf& sb) {
+void AnalogState::store(boost::asio::streambuf& sb) {
 	SignalState::store(sb);
 	boost::endian::big_uint64_buf_t repr;
 	memcpy(&repr, &value, sizeof(repr));
@@ -293,14 +326,14 @@ bool BooleanState::getValue() const {
 	return value;
 }
 
-void BooleanState::load(std::streambuf& sb) {
+void BooleanState::load(boost::asio::streambuf& sb) {
 	SignalState::load(sb);
 	boost::endian::little_uint8_buf_t repr;
 	sb.sgetn(reinterpret_cast<char*>(&repr), sizeof(repr));
 	value = *reinterpret_cast<bool*>(&repr);
 }
 
-void BooleanState::store(std::streambuf& sb) {
+void BooleanState::store(boost::asio::streambuf& sb) {
 	SignalState::store(sb);
 	boost::endian::little_uint8_buf_t repr;
 	memcpy(&repr, &value, sizeof(repr));
@@ -357,7 +390,7 @@ string StringState::getValue() const {
 	return value;
 }
 
-void StringState::load(std::streambuf& sb) {
+void StringState::load(boost::asio::streambuf& sb) {
 	SignalState::load(sb);
 	uint32_t len;
 	boost::endian::little_uint32_buf_t lenRepr;
@@ -369,11 +402,11 @@ void StringState::load(std::streambuf& sb) {
 	}
 }
 
-void StringState::store(std::streambuf& sb) {
+void StringState::store(boost::asio::streambuf& sb) {
 	SignalState::store(sb);
 	uint32_t len = value.length();
 	boost::endian::little_uint32_buf_t lenRepr;
-	memcpy(&lenRepr, &value, sizeof(lenRepr));
+	lenRepr = len;
 	sb.sputn(lenRepr.data(), sizeof(lenRepr));
 	for(auto& c : value) {
 		sb.sputc(c);

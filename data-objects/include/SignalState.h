@@ -36,8 +36,12 @@ public:
 	SignalId& operator=(const SignalId& r);
 	bool operator==(const SignalId& r) const;
 	bool operator<(const SignalId& r) const;
+
+	void load(boost::asio::streambuf&);
+	void store(boost::asio::streambuf&);
+	std::size_t size();
 private:
-	const std::string value;
+	std::string value;
 };
 
 class SignalState;
@@ -50,8 +54,8 @@ public:
 
 	StateEvent& operator=(const StateEvent&);
 
-	void load(std::streambuf&);
-	void store(std::streambuf&);
+	void load(boost::asio::streambuf&);
+	void store(boost::asio::streambuf&);
 	std::size_t size();
 
   const SignalStatePtr getBefore() const;
@@ -82,8 +86,8 @@ public:
 	bool timeout() const;
   const boost::posix_time::ptime& getTimestamp() const;
 
-	virtual void load(std::streambuf&);
-	virtual void store(std::streambuf&);
+	virtual void load(boost::asio::streambuf&);
+	virtual void store(boost::asio::streambuf&);
 	virtual std::size_t size();
 	
 	void addChangeListener(StateListenerPtr);
@@ -122,8 +126,8 @@ public:
 	void setValue(double);
 	double getValue() const;
 
-	void load(std::streambuf&);
-	void store(std::streambuf&);
+	void load(boost::asio::streambuf&);
+	void store(boost::asio::streambuf&);
 	std::size_t size();
 	SignalStatePtr clone();
 private:
@@ -140,8 +144,8 @@ public:
 	void setValue(bool);
 	bool getValue() const;
 
-	void load(std::streambuf&);
-	void store(std::streambuf&);
+	void load(boost::asio::streambuf&);
+	void store(boost::asio::streambuf&);
 	std::size_t size();
 	SignalStatePtr clone();
 private:
@@ -158,8 +162,8 @@ public:
 	void setValue(const std::string&);
 	std::string getValue() const;
 
-	void load(std::streambuf&);
-	void store(std::streambuf&);
+	void load(boost::asio::streambuf&);
+	void store(boost::asio::streambuf&);
 	std::size_t size();
 	SignalStatePtr clone();
 private:

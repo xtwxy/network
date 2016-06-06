@@ -64,8 +64,8 @@ public:
 	virtual ~Payload();
 
 	boost::any any();
-	virtual void load(std::streambuf&) = 0;
-	virtual void store(std::streambuf&) = 0;
+	virtual void load(boost::asio::streambuf&) = 0;
+	virtual void store(boost::asio::streambuf&) = 0;
 	virtual std::size_t size() = 0;
 };
 

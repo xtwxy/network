@@ -24,8 +24,8 @@ public:
 	uint32_t getTimestamp() const;
 	void setTimestamp(uint32_t timestamp);
 
-	void load(std::streambuf&);
-	void store(std::streambuf&);
+	void load(boost::asio::streambuf&);
+	void store(boost::asio::streambuf&);
 	std::size_t size();
 
 private:

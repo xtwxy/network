@@ -21,8 +21,8 @@ public:
 	uint32_t getVersion();
 	void setVersion(uint32_t);
 
-	void load(std::streambuf&);
-	void store(std::streambuf&);
+	void load(boost::asio::streambuf&);
+	void store(boost::asio::streambuf&);
 	std::size_t size();
 private:
 	boost::endian::little_uint32_buf_t version;
@@ -37,8 +37,8 @@ public:
 	uint32_t getStatusCode();
 	void setStatusCode(uint32_t);
 
-	void load(std::streambuf&);
-	void store(std::streambuf&);
+	void load(boost::asio::streambuf&);
+	void store(boost::asio::streambuf&);
 	std::size_t size();
 private:
 	boost::endian::little_uint32_buf_t statusCode;

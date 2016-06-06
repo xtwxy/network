@@ -18,11 +18,11 @@ void SetVersionRequest::setVersion(uint32_t v) {
 	version = v;
 }
 
-void SetVersionRequest::load(std::streambuf& sb) {
+void SetVersionRequest::load(boost::asio::streambuf& sb) {
 	sb.sgetn(reinterpret_cast<char*>(&version), sizeof(version));
 }
 
-void SetVersionRequest::store(std::streambuf& sb) {
+void SetVersionRequest::store(boost::asio::streambuf& sb) {
 	sb.sputn(version.data(), sizeof(version));
 }
 
@@ -37,11 +37,11 @@ void SetVersionResponse::setStatusCode(uint32_t v) {
 	statusCode = v;
 }
 
-void SetVersionResponse::load(std::streambuf& sb) {
+void SetVersionResponse::load(boost::asio::streambuf& sb) {
 	sb.sgetn(reinterpret_cast<char*>(&statusCode), sizeof(statusCode));
 }
 
-void SetVersionResponse::store(std::streambuf& sb) {
+void SetVersionResponse::store(boost::asio::streambuf& sb) {
 	sb.sputn(statusCode.data(), sizeof(statusCode));
 }
 
