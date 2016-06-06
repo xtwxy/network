@@ -17,7 +17,11 @@
 
 namespace DataObjects {
 
-enum SignalType { AI=1, DI=2, SI=3, AO=4, DO=8, SO=12 };
+const uint8_t AI=1;
+const uint8_t DI=2;
+const uint8_t SI=3;
+
+typedef uint8_t SignalType;
 
 const static time_t TIMEOUT_SECONDS = 5;
 const static time_t EXPIRE_SECONDS = 30;
@@ -100,10 +104,11 @@ protected:
 	virtual SignalStatePtr clone() = 0;
   void updateTimestamp();
 private:
-	const SignalType signalType;
+  // remove const for signal type, for load()
+  	SignalType signalType;
 	const time_t timeoutSeconds;
 	const time_t expireSeconds;
-  boost::posix_time::ptime timestamp;
+	boost::posix_time::ptime timestamp;
 	std::vector<StateListenerPtr> listeners;
 };
 

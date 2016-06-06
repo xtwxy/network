@@ -70,11 +70,11 @@ std::size_t StateEvent::size() {
 }
 
 const SignalStatePtr StateEvent::getBefore() const {
-
+	return before;
 }
 
 const SignalStatePtr StateEvent::getAfter() const {
-
+	return after;
 }
 
 StateListener::StateListener() {
@@ -133,17 +133,29 @@ SignalType SignalState::getType() const {
   return signalType;
 }
 
-void SignalState::load(std::streambuf&) {
-  // TODO: implement SignalState::load()
+void SignalState::load(std::streambuf& sb) {
+	signalType = sb.sgetc();
+	// transient: const time_t timeoutSeconds;
+	// transient: const time_t expireSeconds;
+	boost::endian::little_int64_buf_t secsRepr;
+	sb.sgetn(reinterpret_cast<char*>(&secsRepr), sizeof(secsRepr));
+	time_t s = secsRepr.value();
+	timestamp = boost::posix_time::from_time_t(s);
+	// transient: std::vector<StateListenerPtr> listeners;
 }
 
-void SignalState::store(std::streambuf&) {
-  // TODO: implement SignalState::store()
+void SignalState::store(std::streambuf& sb) {
+	sb.sputc(signalType);
+	tm t = to_tm(timestamp);
+	time_t secs = mktime(&t);
+	boost::endian::little_int64_buf_t secsRepr;
+	secsRepr = secs;
+	sb.sputn(reinterpret_cast<char*>(&secsRepr), sizeof(secsRepr));
 }
 
 std::size_t SignalState::size() {
   // TODO: implement SignalState::size();
-  return sizeof(SignalType) + sizeof(timestamp);
+  return sizeof(SignalType) + sizeof(boost::endian::little_int64_buf_t);
 }
 
 bool SignalState::expired() const {
