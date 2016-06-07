@@ -27,147 +27,152 @@ const static time_t TIMEOUT_SECONDS = 5;
 const static time_t EXPIRE_SECONDS = 30;
 
 class SignalId : public CallProtocol::Payload {
-public:
-	SignalId();
-	SignalId(const std::string r);
-	SignalId(const SignalId& r);
-	virtual ~SignalId();
+ public:
+  SignalId();
+  SignalId(const std::string r);
+  SignalId(const SignalId& r);
+  virtual ~SignalId();
 
-	SignalId& operator=(const SignalId& r);
-	bool operator==(const SignalId& r) const;
-	bool operator<(const SignalId& r) const;
+  SignalId& operator=(const SignalId& r);
+  bool operator==(const SignalId& r) const;
+  bool operator==(const std::string& r) const;
+  bool operator==(const std::string r) const;
+  bool operator<(const SignalId& r) const;
 
-	void load(boost::asio::streambuf&);
-	void store(boost::asio::streambuf&);
-	std::size_t size();
-private:
-	std::string value;
+  const std::string& getValue() const;
+
+  void load(boost::asio::streambuf&);
+  void store(boost::asio::streambuf&);
+  std::size_t size();
+ private:
+  std::string value;
 };
 
 class SignalState;
 typedef boost::shared_ptr<SignalState> SignalStatePtr;
 
 struct StateEvent : public CallProtocol::Payload {
-public:
-	StateEvent(const StateEvent&);
-	StateEvent(const SignalStatePtr before, const SignalStatePtr after);
+ public:
+  StateEvent();
+  StateEvent(const StateEvent&);
+  StateEvent(const SignalStatePtr before, const SignalStatePtr after);
 
-	StateEvent& operator=(const StateEvent&);
+  StateEvent& operator=(const StateEvent&);
 
-	void load(boost::asio::streambuf&);
-	void store(boost::asio::streambuf&);
-	std::size_t size();
+  void load(boost::asio::streambuf&);
+  void store(boost::asio::streambuf&);
+  std::size_t size();
 
   const SignalStatePtr getBefore() const;
   const SignalStatePtr getAfter() const;
-private:
-  const SignalStatePtr before;
-	const SignalStatePtr after;
+ private:
+  SignalStatePtr before;
+  SignalStatePtr after;
 };
 
 typedef boost::shared_ptr<StateEvent> StateEventPtr;
 
 class StateListener : private boost::noncopyable { 
-public:
-	StateListener();
-	virtual ~StateListener();
+ public:
+  StateListener();
+  virtual ~StateListener();
 
-	virtual void stateChanged(StateEventPtr) = 0;
+  virtual void stateChanged(StateEventPtr) = 0;
 };
 
 typedef boost::shared_ptr<StateListener> StateListenerPtr;
 
 class SignalState : public CallProtocol::Payload {
-public:
-	virtual ~SignalState();
+ public:
+  virtual ~SignalState();
 
-	SignalType getType() const;
-	bool expired() const;
-	bool timeout() const;
+  SignalType getType() const;
+  bool expired() const;
+  bool timeout() const;
   const boost::posix_time::ptime& getTimestamp() const;
 
-	virtual void load(boost::asio::streambuf&);
-	virtual void store(boost::asio::streambuf&);
-	virtual std::size_t size();
-	
-	void addChangeListener(StateListenerPtr);
-protected:
-	SignalState(const SignalType signalType,
-			const time_t timeoutSeconds,
-			const time_t expireSeconds,
-			const boost::posix_time::ptime& timestamp);
-	SignalState(const SignalType signalType,
-			const time_t timeoutSeconds,
-			const time_t expireSeconds,
-			const boost::posix_time::ptime& timestamp,
-			const std::vector<StateListenerPtr>& listeners);
-	SignalState(const SignalState&);
-	SignalState& operator=(const SignalState&);
+  virtual void load(boost::asio::streambuf&);
+  virtual void store(boost::asio::streambuf&);
+  virtual std::size_t size();
+  static SignalStatePtr createFrom(boost::asio::streambuf&);
+  void addChangeListener(StateListenerPtr);
+ protected:
+  SignalState(const SignalType signalType,
+              const time_t timeoutSeconds,
+              const time_t expireSeconds,
+              const boost::posix_time::ptime& timestamp);
+  SignalState(const SignalType signalType,
+              const time_t timeoutSeconds,
+              const time_t expireSeconds,
+              const boost::posix_time::ptime& timestamp,
+              const std::vector<StateListenerPtr>& listeners);
+  SignalState(const SignalState&);
+  SignalState& operator=(const SignalState&);
 
   void fireStateChange(SignalStatePtr before, SignalStatePtr after);
-	virtual SignalStatePtr clone() = 0;
+  virtual SignalStatePtr clone() = 0;
   void updateTimestamp();
-private:
+ private:
   // remove const for signal type, for load()
-  	SignalType signalType;
-	const time_t timeoutSeconds;
-	const time_t expireSeconds;
-	boost::posix_time::ptime timestamp;
-	std::vector<StateListenerPtr> listeners;
+  SignalType signalType;
+  const time_t timeoutSeconds;
+  const time_t expireSeconds;
+  boost::posix_time::ptime timestamp;
+  std::vector<StateListenerPtr> listeners;
 };
 
 class AnalogState : public SignalState {
-public:
-	AnalogState();
-	AnalogState(const AnalogState&);
-	virtual ~AnalogState();
-	AnalogState& operator=(const AnalogState&);
+ public:
+  AnalogState();
+  AnalogState(const AnalogState&);
+  virtual ~AnalogState();
+  AnalogState& operator=(const AnalogState&);
 
-	void setValue(double);
-	double getValue() const;
+  void setValue(double);
+  double getValue() const;
 
-	void load(boost::asio::streambuf&);
-	void store(boost::asio::streambuf&);
-	std::size_t size();
-	SignalStatePtr clone();
-private:
-	double value;
+  void load(boost::asio::streambuf&);
+  void store(boost::asio::streambuf&);
+  std::size_t size();
+  SignalStatePtr clone();
+ private:
+  double value;
 };
 
 class BooleanState : public SignalState {
-public:
-	BooleanState();
-	BooleanState(const BooleanState&);
-	virtual ~BooleanState();
-	BooleanState& operator=(const BooleanState&);
+ public:
+  BooleanState();
+  BooleanState(const BooleanState&);
+  virtual ~BooleanState();
+  BooleanState& operator=(const BooleanState&);
 
-	void setValue(bool);
-	bool getValue() const;
+  void setValue(bool);
+  bool getValue() const;
 
-	void load(boost::asio::streambuf&);
-	void store(boost::asio::streambuf&);
-	std::size_t size();
-	SignalStatePtr clone();
-private:
-	bool value;
+  void load(boost::asio::streambuf&);
+  void store(boost::asio::streambuf&);
+  std::size_t size();
+  SignalStatePtr clone();
+ private:
+  bool value;
 };
 
 class StringState :public SignalState {
-public:
-	StringState();
-	StringState(const StringState&);
-	virtual ~StringState();
-	StringState& operator=(const StringState&);
+ public:
+  StringState();
+  StringState(const StringState&);
+  virtual ~StringState();
+  StringState& operator=(const StringState&);
 
-	void setValue(const std::string&);
-	std::string getValue() const;
+  void setValue(const std::string&);
+  std::string getValue() const;
 
-	void load(boost::asio::streambuf&);
-	void store(boost::asio::streambuf&);
-	std::size_t size();
-	SignalStatePtr clone();
-private:
-	std::string value;
+  void load(boost::asio::streambuf&);
+  void store(boost::asio::streambuf&);
+  std::size_t size();
+  SignalStatePtr clone();
+ private:
+  std::string value;
 };
 
 } /* namespace DataObjects */
