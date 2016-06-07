@@ -28,6 +28,7 @@ const static time_t EXPIRE_SECONDS = 30;
 
 class SignalId : public CallProtocol::Payload {
  public:
+	const static CallProtocol::MessageType TYPE_ID = 3;
   SignalId();
   SignalId(const std::string r);
   SignalId(const SignalId& r);
@@ -53,6 +54,7 @@ typedef boost::shared_ptr<SignalState> SignalStatePtr;
 
 struct StateEvent : public CallProtocol::Payload {
  public:
+	const static CallProtocol::MessageType TYPE_ID = 4;
   StateEvent();
   StateEvent(const StateEvent&);
   StateEvent(const SignalStatePtr before, const SignalStatePtr after);
@@ -84,6 +86,7 @@ typedef boost::shared_ptr<StateListener> StateListenerPtr;
 
 class SignalState : public CallProtocol::Payload {
  public:
+	const static CallProtocol::MessageType TYPE_ID = 5;
   virtual ~SignalState();
 
   SignalType getType() const;
@@ -123,6 +126,7 @@ class SignalState : public CallProtocol::Payload {
 
 class AnalogState : public SignalState {
  public:
+	const static CallProtocol::MessageType TYPE_ID = 6;
   AnalogState();
   AnalogState(const AnalogState&);
   virtual ~AnalogState();
@@ -141,6 +145,7 @@ class AnalogState : public SignalState {
 
 class BooleanState : public SignalState {
  public:
+	const static CallProtocol::MessageType TYPE_ID = 7;
   BooleanState();
   BooleanState(const BooleanState&);
   virtual ~BooleanState();
@@ -159,6 +164,7 @@ class BooleanState : public SignalState {
 
 class StringState :public SignalState {
  public:
+	const static CallProtocol::MessageType TYPE_ID = 8;
   StringState();
   StringState(const StringState&);
   virtual ~StringState();

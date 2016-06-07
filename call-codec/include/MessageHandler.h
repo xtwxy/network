@@ -16,7 +16,7 @@ namespace CallProtocol {
 class SetVersionRequest : public Payload {
 public:
   typedef boost::shared_ptr<SetVersionRequest> Ptr;
-	const static CallProtocol::MessageType TYPE_ID = 0;
+	const static CallProtocol::MessageType TYPE_ID = 1;
 
 	uint32_t getVersion();
 	void setVersion(uint32_t);
@@ -31,7 +31,7 @@ private:
 class SetVersionResponse : public Payload {
 public:
   typedef boost::shared_ptr<SetVersionResponse> Ptr;
-	const static CallProtocol::MessageType TYPE_ID = 1;
+	const static CallProtocol::MessageType TYPE_ID = 2;
 	enum StatusCode { OK = 0, NOT_SUPPORTED_VERSION = 1 };
 
 	uint32_t getStatusCode();
