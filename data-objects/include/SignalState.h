@@ -10,6 +10,7 @@
 
 #include <ctime>
 #include <map>
+#include <list>
 #include <boost/date_time/local_time/local_time.hpp>
 #include <boost/noncopyable.hpp>
 
@@ -28,7 +29,9 @@ const static time_t EXPIRE_SECONDS = 30;
 
 class SignalId : public CallProtocol::Payload {
  public:
-	const static CallProtocol::MessageType TYPE_ID = 3;
+  const static CallProtocol::MessageType TYPE_ID = 3;
+  static CallProtocol::PayloadPtr create();
+
   SignalId();
   SignalId(const std::string r);
   SignalId(const SignalId& r);
@@ -43,8 +46,8 @@ class SignalId : public CallProtocol::Payload {
   const std::string& getValue() const;
 
   void load(boost::asio::streambuf&);
-  void store(boost::asio::streambuf&);
-  std::size_t size();
+  void store(boost::asio::streambuf&) const;
+  std::size_t size() const;
  private:
   std::string value;
 };
@@ -54,7 +57,9 @@ typedef boost::shared_ptr<SignalState> SignalStatePtr;
 
 struct StateEvent : public CallProtocol::Payload {
  public:
-	const static CallProtocol::MessageType TYPE_ID = 4;
+  const static CallProtocol::MessageType TYPE_ID = 4;
+  static CallProtocol::PayloadPtr create();
+
   StateEvent();
   StateEvent(const StateEvent&);
   StateEvent(const SignalStatePtr before, const SignalStatePtr after);
@@ -62,8 +67,8 @@ struct StateEvent : public CallProtocol::Payload {
   StateEvent& operator=(const StateEvent&);
 
   void load(boost::asio::streambuf&);
-  void store(boost::asio::streambuf&);
-  std::size_t size();
+  void store(boost::asio::streambuf&) const;
+  std::size_t size() const;
 
   const SignalStatePtr getBefore() const;
   const SignalStatePtr getAfter() const;
@@ -86,7 +91,6 @@ typedef boost::shared_ptr<StateListener> StateListenerPtr;
 
 class SignalState : public CallProtocol::Payload {
  public:
-	const static CallProtocol::MessageType TYPE_ID = 5;
   virtual ~SignalState();
 
   SignalType getType() const;
@@ -95,8 +99,8 @@ class SignalState : public CallProtocol::Payload {
   const boost::posix_time::ptime& getTimestamp() const;
 
   virtual void load(boost::asio::streambuf&);
-  virtual void store(boost::asio::streambuf&);
-  virtual std::size_t size();
+  virtual void store(boost::asio::streambuf&) const;
+  virtual std::size_t size() const;
   static SignalStatePtr createFrom(boost::asio::streambuf&);
   void addChangeListener(StateListenerPtr);
  protected:
@@ -113,7 +117,7 @@ class SignalState : public CallProtocol::Payload {
   SignalState& operator=(const SignalState&);
 
   void fireStateChange(SignalStatePtr before, SignalStatePtr after);
-  virtual SignalStatePtr clone() = 0;
+  virtual SignalStatePtr clone() const = 0;
   void updateTimestamp();
  private:
   // remove const for signal type, for load()
@@ -126,7 +130,9 @@ class SignalState : public CallProtocol::Payload {
 
 class AnalogState : public SignalState {
  public:
-	const static CallProtocol::MessageType TYPE_ID = 6;
+  const static CallProtocol::MessageType TYPE_ID = 5;
+  static CallProtocol::PayloadPtr create();
+
   AnalogState();
   AnalogState(const AnalogState&);
   virtual ~AnalogState();
@@ -136,16 +142,18 @@ class AnalogState : public SignalState {
   double getValue() const;
 
   void load(boost::asio::streambuf&);
-  void store(boost::asio::streambuf&);
-  std::size_t size();
-  SignalStatePtr clone();
+  void store(boost::asio::streambuf&) const;
+  std::size_t size() const;
+  SignalStatePtr clone() const;
  private:
   double value;
 };
 
 class BooleanState : public SignalState {
  public:
-	const static CallProtocol::MessageType TYPE_ID = 7;
+  const static CallProtocol::MessageType TYPE_ID = 6;
+  static CallProtocol::PayloadPtr create();
+
   BooleanState();
   BooleanState(const BooleanState&);
   virtual ~BooleanState();
@@ -155,16 +163,18 @@ class BooleanState : public SignalState {
   bool getValue() const;
 
   void load(boost::asio::streambuf&);
-  void store(boost::asio::streambuf&);
-  std::size_t size();
-  SignalStatePtr clone();
+  void store(boost::asio::streambuf&) const;
+  std::size_t size() const;
+  SignalStatePtr clone() const;
  private:
   bool value;
 };
 
 class StringState :public SignalState {
  public:
-	const static CallProtocol::MessageType TYPE_ID = 8;
+  const static CallProtocol::MessageType TYPE_ID = 7;
+  static CallProtocol::PayloadPtr create();
+
   StringState();
   StringState(const StringState&);
   virtual ~StringState();
@@ -174,12 +184,99 @@ class StringState :public SignalState {
   std::string getValue() const;
 
   void load(boost::asio::streambuf&);
-  void store(boost::asio::streambuf&);
-  std::size_t size();
-  SignalStatePtr clone();
+  void store(boost::asio::streambuf&) const;
+  std::size_t size() const;
+  SignalStatePtr clone() const;
  private:
   std::string value;
 };
+
+class GetStateRequest : public CallProtocol::Payload {
+ public:
+  const static CallProtocol::MessageType TYPE_ID = 8;
+  static CallProtocol::PayloadPtr create();
+
+  typedef std::list<SignalId> SignalIds;
+  GetStateRequest();
+  GetStateRequest(const SignalIds&);
+  GetStateRequest(const GetStateRequest&);
+  virtual ~GetStateRequest();
+  GetStateRequest& operator=(const GetStateRequest&);
+
+  void addSignalId(const SignalId&);
+
+  void load(boost::asio::streambuf&);
+  void store(boost::asio::streambuf&) const;
+  std::size_t size() const;
+ private:
+  SignalIds signalIds;
+};
+
+class GetStateResponse : public CallProtocol::Payload {
+ public:
+  const static CallProtocol::MessageType TYPE_ID = 9;
+  static CallProtocol::PayloadPtr create();
+
+  typedef std::map<SignalId, SignalStatePtr> Signals;
+  GetStateResponse();
+  GetStateResponse(const Signals&);
+  GetStateResponse(const GetStateResponse&);
+  virtual ~GetStateResponse();
+  GetStateResponse& operator=(const GetStateResponse&);
+
+  void addSignal(const SignalId&, const SignalStatePtr);
+
+  void load(boost::asio::streambuf&);
+  void store(boost::asio::streambuf&) const;
+  std::size_t size() const;
+ private:
+  Signals signals;
+};
+
+class SetStateRequest : public CallProtocol::Payload {
+ public:
+  const static CallProtocol::MessageType TYPE_ID = 10;
+  static CallProtocol::PayloadPtr create();
+
+  typedef std::map<SignalId, SignalStatePtr> Signals;
+  SetStateRequest();
+  SetStateRequest(const Signals&);
+  SetStateRequest(const SetStateRequest&);
+  virtual ~SetStateRequest();
+  SetStateRequest& operator=(const SetStateRequest&);
+
+  void addSignal(const SignalId&, const SignalStatePtr);
+
+  void load(boost::asio::streambuf&);
+  void store(boost::asio::streambuf&) const;
+  std::size_t size() const;
+ private:
+  Signals signals;
+};
+
+class SetStateResponse : public CallProtocol::Payload {
+ public:
+  const static CallProtocol::MessageType TYPE_ID = 11;
+  static CallProtocol::PayloadPtr create();
+
+  typedef uint8_t Result;
+  typedef std::map<SignalId, Result> Results;
+  SetStateResponse();
+  SetStateResponse(const Results&);
+  SetStateResponse(const SetStateResponse&);
+  virtual ~SetStateResponse();
+  SetStateResponse& operator=(const SetStateResponse&);
+
+  void addResult(const SignalId&, const Result);
+
+  void load(boost::asio::streambuf&);
+  void store(boost::asio::streambuf&) const;
+  std::size_t size() const;
+ private:
+  Results results;
+};
+
+void PayloadFactoryInitializer(CallProtocol::PayloadFactory& );
 
 } /* namespace DataObjects */
 

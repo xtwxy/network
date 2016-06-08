@@ -37,6 +37,7 @@ typedef boost::shared_ptr<PayloadFactory> PayloadFactoryPtr;
 typedef boost::shared_ptr<Message> MessagePtr;
 
 typedef boost::function<PayloadPtr (const MessageType)> PayloadCreator;
+typedef boost::function<void (PayloadFactory&)> PayloadFactoryInitializer;
 
 struct MessageHeader {
 	MessageHeader();
@@ -65,8 +66,8 @@ public:
 
 	boost::any any();
 	virtual void load(boost::asio::streambuf&) = 0;
-	virtual void store(boost::asio::streambuf&) = 0;
-	virtual std::size_t size() = 0;
+	virtual void store(boost::asio::streambuf&) const = 0;
+	virtual std::size_t size() const = 0;
 };
 
 struct Message {
@@ -91,6 +92,7 @@ struct Message {
 class PayloadFactory {
 public:
 	PayloadFactory();
+	PayloadFactory(PayloadFactoryInitializer);
 	virtual ~PayloadFactory();
 
 	void addCreator(const MessageType, const PayloadCreator);

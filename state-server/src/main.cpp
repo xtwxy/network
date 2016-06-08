@@ -14,13 +14,16 @@
 #include "nw/Acceptor.hpp"
 #include "MessageCodec.h"
 #include "MessageHandler.h"
+#include "SignalState.h"
 
 using namespace codec;
 using namespace nw;
 using namespace CallProtocol;
 
 void StateServerPipelineInitializer(codec::Pipeline& pipeline) {
-	MessageCodec::Ptr messageCodec = boost::make_shared<MessageCodec>();
+	PayloadFactoryInitializer initializer = &DataObjects::PayloadFactoryInitializer;
+	PayloadFactoryPtr payloadFactory = boost::make_shared<PayloadFactory>(initializer);
+	MessageCodec::Ptr messageCodec = boost::make_shared<MessageCodec>(payloadFactory);
 	MessageHandler::Ptr messageHandler = boost::make_shared<MessageHandler>();
 
 	pipeline.addLast(messageCodec->getCodec());

@@ -50,6 +50,9 @@ boost::any Payload::any() {
 	return boost::any(shared_from_this());
 }
 
+PayloadFactory::PayloadFactory(PayloadFactoryInitializer initialize) {
+	initialize(*this);
+}
 PayloadFactory::PayloadFactory() {
 
 }
