@@ -505,12 +505,12 @@ GetStateRequest::~GetStateRequest() {
 }
 
 GetStateRequest& GetStateRequest::operator=(const GetStateRequest& r) {
-	this->signalIds = r.signalIds;
-	return *this;
+  this->signalIds = r.signalIds;
+  return *this;
 }
 
 void GetStateRequest::addSignalId(const SignalId& s) {
-	signalIds.push_back(s);
+  signalIds.push_back(s);
 }
 
 void GetStateRequest::load(boost::asio::streambuf& sb) {
@@ -519,9 +519,9 @@ void GetStateRequest::load(boost::asio::streambuf& sb) {
   sb.sgetn(reinterpret_cast<char*>(&lenRepr), sizeof(lenRepr));
   len = *reinterpret_cast<uint32_t*>(&lenRepr);
   for(size_t i = 0; i != len; ++i) {
-	  SignalId id;
-	  id.load(sb);
-	  signalIds.push_back(id);
+    SignalId id;
+    id.load(sb);
+    signalIds.push_back(id);
   }
 }
 
@@ -536,15 +536,15 @@ void GetStateRequest::store(boost::asio::streambuf& sb) const {
 }
 
 std::size_t GetStateRequest::size() const {
-	std::size_t length = sizeof(uint32_t);
-	for(auto& c : signalIds) {
-		length += c.size();
-	}
-	return length;
+  std::size_t length = sizeof(uint32_t);
+  for(auto& c : signalIds) {
+    length += c.size();
+  }
+  return length;
 }
 
 PayloadPtr GetStateResponse::create() {
-	return boost::make_shared<GetStateResponse>();
+  return boost::make_shared<GetStateResponse>();
 }
 
 GetStateResponse::GetStateResponse() :signals() {
@@ -566,12 +566,12 @@ GetStateResponse::~GetStateResponse() {
 }
 
 GetStateResponse& GetStateResponse::operator=(const GetStateResponse& r) {
-	this->signals = r.signals;
-	return *this;
+  this->signals = r.signals;
+  return *this;
 }
 
 void GetStateResponse::addSignal(const SignalId& id, SignalStatePtr s) {
-	signals.insert(std::make_pair(id, s));
+  signals.insert(std::make_pair(id, s));
 }
 
 void GetStateResponse::load(boost::asio::streambuf& sb) {
@@ -580,10 +580,10 @@ void GetStateResponse::load(boost::asio::streambuf& sb) {
   sb.sgetn(reinterpret_cast<char*>(&lenRepr), sizeof(lenRepr));
   len = *reinterpret_cast<uint32_t*>(&lenRepr);
   for(size_t i = 0; i != len; ++i) {
-	  SignalId id;
-	  id.load(sb);
-	  SignalStatePtr s = SignalState::createFrom(sb);
-	  signals.insert(std::make_pair(id, s));
+    SignalId id;
+    id.load(sb);
+    SignalStatePtr s = SignalState::createFrom(sb);
+    signals.insert(std::make_pair(id, s));
   }
 }
 
@@ -599,16 +599,16 @@ void GetStateResponse::store(boost::asio::streambuf& sb) const {
 }
 
 std::size_t GetStateResponse::size() const {
-	std::size_t length = sizeof(uint32_t);
-	for(auto& c : signals) {
-		length += c.first.size();
-		length += c.second->size();
-	}
-	return length;
+  std::size_t length = sizeof(uint32_t);
+  for(auto& c : signals) {
+    length += c.first.size();
+    length += c.second->size();
+  }
+  return length;
 }
 
 PayloadPtr SetStateRequest::create() {
-	return boost::make_shared<SetStateRequest>();
+  return boost::make_shared<SetStateRequest>();
 }
 
 SetStateRequest::SetStateRequest() :signals() {
@@ -630,12 +630,12 @@ SetStateRequest::~SetStateRequest() {
 }
 
 SetStateRequest& SetStateRequest::operator=(const SetStateRequest& r) {
-	this->signals = r.signals;
-	return *this;
+  this->signals = r.signals;
+  return *this;
 }
 
 void SetStateRequest::addSignal(const SignalId& id, SignalStatePtr s) {
-	signals.insert(std::make_pair(id, s));
+  signals.insert(std::make_pair(id, s));
 }
 
 void SetStateRequest::load(boost::asio::streambuf& sb) {
@@ -644,10 +644,10 @@ void SetStateRequest::load(boost::asio::streambuf& sb) {
   sb.sgetn(reinterpret_cast<char*>(&lenRepr), sizeof(lenRepr));
   len = *reinterpret_cast<uint32_t*>(&lenRepr);
   for(size_t i = 0; i != len; ++i) {
-	  SignalId id;
-	  id.load(sb);
-	  SignalStatePtr s = SignalState::createFrom(sb);
-	  signals.insert(std::make_pair(id, s));
+    SignalId id;
+    id.load(sb);
+    SignalStatePtr s = SignalState::createFrom(sb);
+    signals.insert(std::make_pair(id, s));
   }
 }
 
@@ -663,12 +663,12 @@ void SetStateRequest::store(boost::asio::streambuf& sb) const {
 }
 
 std::size_t SetStateRequest::size() const {
-	std::size_t length = sizeof(uint32_t);
-	for(auto& c : signals) {
-		length += c.first.size();
-		length += c.second->size();
-	}
-	return length;
+  std::size_t length = sizeof(uint32_t);
+  for(auto& c : signals) {
+    length += c.first.size();
+    length += c.second->size();
+  }
+  return length;
 }
 
 PayloadPtr SetStateResponse::create() {
@@ -694,12 +694,12 @@ SetStateResponse::~SetStateResponse() {
 }
 
 SetStateResponse& SetStateResponse::operator=(const SetStateResponse& r) {
-	this->results = r.results;
-	return *this;
+  this->results = r.results;
+  return *this;
 }
 
 void SetStateResponse::addResult(const SignalId& id, Result s) {
-	results.insert(std::make_pair(id, s));
+  results.insert(std::make_pair(id, s));
 }
 
 void SetStateResponse::load(boost::asio::streambuf& sb) {
@@ -708,10 +708,10 @@ void SetStateResponse::load(boost::asio::streambuf& sb) {
   sb.sgetn(reinterpret_cast<char*>(&lenRepr), sizeof(lenRepr));
   len = *reinterpret_cast<uint32_t*>(&lenRepr);
   for(size_t i = 0; i != len; ++i) {
-	  SignalId id;
-	  id.load(sb);
-	  uint8_t s = sb.sbumpc();
-	  results.insert(std::make_pair(id, s));
+    SignalId id;
+    id.load(sb);
+    uint8_t s = sb.sbumpc();
+    results.insert(std::make_pair(id, s));
   }
 }
 
@@ -727,24 +727,24 @@ void SetStateResponse::store(boost::asio::streambuf& sb) const {
 }
 
 std::size_t SetStateResponse::size() const {
-	std::size_t length = sizeof(uint32_t);
-	for(auto& c : results) {
-		length += c.first.size();
-		length += sizeof(c.second);
-	}
-	return length;
+  std::size_t length = sizeof(uint32_t);
+  for(auto& c : results) {
+    length += c.first.size();
+    length += sizeof(c.second);
+  }
+  return length;
 }
 
 void PayloadFactoryInitializer(CallProtocol::PayloadFactory& factory) {
-	factory.addCreator(SignalId::TYPE_ID, boost::bind(&SignalId::create));
-	factory.addCreator(StateEvent::TYPE_ID, boost::bind(&StateEvent::create));
-	factory.addCreator(AnalogState::TYPE_ID, boost::bind(&AnalogState::create));
-	factory.addCreator(BooleanState::TYPE_ID, boost::bind(&BooleanState::create));
-	factory.addCreator(StringState::TYPE_ID, boost::bind(&StringState::create));
-	factory.addCreator(GetStateRequest::TYPE_ID, boost::bind(&GetStateRequest::create));
-	factory.addCreator(GetStateResponse::TYPE_ID, boost::bind(&GetStateResponse::create));
-	factory.addCreator(SetStateRequest::TYPE_ID, boost::bind(&SetStateRequest::create));
-	factory.addCreator(SetStateResponse::TYPE_ID, boost::bind(&SetStateResponse::create));
+  factory.addCreator(SignalId::TYPE_ID, boost::bind(&SignalId::create));
+  factory.addCreator(StateEvent::TYPE_ID, boost::bind(&StateEvent::create));
+  factory.addCreator(AnalogState::TYPE_ID, boost::bind(&AnalogState::create));
+  factory.addCreator(BooleanState::TYPE_ID, boost::bind(&BooleanState::create));
+  factory.addCreator(StringState::TYPE_ID, boost::bind(&StringState::create));
+  factory.addCreator(GetStateRequest::TYPE_ID, boost::bind(&GetStateRequest::create));
+  factory.addCreator(GetStateResponse::TYPE_ID, boost::bind(&GetStateResponse::create));
+  factory.addCreator(SetStateRequest::TYPE_ID, boost::bind(&SetStateRequest::create));
+  factory.addCreator(SetStateResponse::TYPE_ID, boost::bind(&SetStateResponse::create));
 }
 
 } /* namespace DataObjects */
