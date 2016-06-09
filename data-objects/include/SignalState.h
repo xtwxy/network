@@ -91,6 +91,7 @@ typedef boost::shared_ptr<StateListener> StateListenerPtr;
 
 class SignalState : public CallProtocol::Payload {
  public:
+  typedef boost::shared_ptr<SignalState> Ptr;
   virtual ~SignalState();
 
   SignalType getType() const;
@@ -130,6 +131,7 @@ class SignalState : public CallProtocol::Payload {
 
 class AnalogState : public SignalState {
  public:
+  typedef boost::shared_ptr<AnalogState> Ptr;
   const static CallProtocol::MessageType TYPE_ID = 5;
   static CallProtocol::PayloadPtr create();
 
@@ -151,6 +153,7 @@ class AnalogState : public SignalState {
 
 class BooleanState : public SignalState {
  public:
+  typedef boost::shared_ptr<BooleanState> Ptr;
   const static CallProtocol::MessageType TYPE_ID = 6;
   static CallProtocol::PayloadPtr create();
 
@@ -172,6 +175,7 @@ class BooleanState : public SignalState {
 
 class StringState :public SignalState {
  public:
+  typedef boost::shared_ptr<StringState> Ptr;
   const static CallProtocol::MessageType TYPE_ID = 7;
   static CallProtocol::PayloadPtr create();
 
@@ -204,6 +208,7 @@ class GetStateRequest : public CallProtocol::Payload {
   GetStateRequest& operator=(const GetStateRequest&);
 
   void addSignalId(const SignalId&);
+  const SignalIds& getSignalIds() const;
 
   void load(boost::asio::streambuf&);
   void store(boost::asio::streambuf&) const;
@@ -225,6 +230,7 @@ class GetStateResponse : public CallProtocol::Payload {
   GetStateResponse& operator=(const GetStateResponse&);
 
   void addSignal(const SignalId&, const SignalStatePtr);
+  const SignalStatePtr getSignal(const SignalId&) const;
 
   void load(boost::asio::streambuf&);
   void store(boost::asio::streambuf&) const;

@@ -509,6 +509,10 @@ GetStateRequest& GetStateRequest::operator=(const GetStateRequest& r) {
   return *this;
 }
 
+const GetStateRequest::SignalIds& GetStateRequest::getSignalIds() const {
+  return signalIds;
+};
+
 void GetStateRequest::addSignalId(const SignalId& s) {
   signalIds.push_back(s);
 }
@@ -572,6 +576,14 @@ GetStateResponse& GetStateResponse::operator=(const GetStateResponse& r) {
 
 void GetStateResponse::addSignal(const SignalId& id, SignalStatePtr s) {
   signals.insert(std::make_pair(id, s));
+}
+
+const SignalStatePtr GetStateResponse::getSignal(const SignalId& id) const {
+  const auto& it = signals.find(id);
+  if(it != signals.end()) {
+    return it->second;
+  }
+  return SignalStatePtr();
 }
 
 void GetStateResponse::load(boost::asio::streambuf& sb) {
