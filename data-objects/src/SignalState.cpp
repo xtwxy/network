@@ -586,6 +586,10 @@ const SignalStatePtr GetStateResponse::getSignal(const SignalId& id) const {
   return SignalStatePtr();
 }
 
+const GetStateResponse::Signals& GetStateResponse::getSignals() const {
+	return signals;
+}
+
 void GetStateResponse::load(boost::asio::streambuf& sb) {
   uint32_t len;
   boost::endian::little_uint32_buf_t lenRepr;
@@ -650,6 +654,18 @@ void SetStateRequest::addSignal(const SignalId& id, SignalStatePtr s) {
   signals.insert(std::make_pair(id, s));
 }
 
+const SignalStatePtr SetStateRequest::getSignal(const SignalId& id) const {
+  const auto& it = signals.find(id);
+  if(it != signals.end()) {
+    return it->second;
+  }
+  return SignalStatePtr();
+}
+
+const SetStateRequest::Signals& SetStateRequest::getSignals() const {
+	return signals;
+}
+
 void SetStateRequest::load(boost::asio::streambuf& sb) {
   uint32_t len;
   boost::endian::little_uint32_buf_t lenRepr;
@@ -712,6 +728,18 @@ SetStateResponse& SetStateResponse::operator=(const SetStateResponse& r) {
 
 void SetStateResponse::addResult(const SignalId& id, Result s) {
   results.insert(std::make_pair(id, s));
+}
+
+const SetStateResponse::Result SetStateResponse::getResult(const SignalId& id) const {
+  const auto& it = results.find(id);
+  if(it != results.end()) {
+    return it->second;
+  }
+  return -1;
+}
+
+const SetStateResponse::Results& SetStateResponse::getResults() const {
+	return results;
 }
 
 void SetStateResponse::load(boost::asio::streambuf& sb) {

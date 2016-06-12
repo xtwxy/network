@@ -231,6 +231,7 @@ class GetStateResponse : public CallProtocol::Payload {
 
   void addSignal(const SignalId&, const SignalStatePtr);
   const SignalStatePtr getSignal(const SignalId&) const;
+  const Signals& getSignals() const;
 
   void load(boost::asio::streambuf&);
   void store(boost::asio::streambuf&) const;
@@ -252,6 +253,8 @@ class SetStateRequest : public CallProtocol::Payload {
   SetStateRequest& operator=(const SetStateRequest&);
 
   void addSignal(const SignalId&, const SignalStatePtr);
+  const SignalStatePtr getSignal(const SignalId&) const;
+  const Signals& getSignals() const;
 
   void load(boost::asio::streambuf&);
   void store(boost::asio::streambuf&) const;
@@ -274,6 +277,8 @@ class SetStateResponse : public CallProtocol::Payload {
   SetStateResponse& operator=(const SetStateResponse&);
 
   void addResult(const SignalId&, const Result);
+  const Result getResult(const SignalId&) const;
+  const Results& getResults() const;
 
   void load(boost::asio::streambuf&);
   void store(boost::asio::streambuf&) const;
