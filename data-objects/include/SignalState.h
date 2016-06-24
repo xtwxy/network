@@ -103,7 +103,8 @@ class SignalState : public CallProtocol::Payload {
   virtual void store(boost::asio::streambuf&) const;
   virtual std::size_t size() const;
   static SignalStatePtr createFrom(boost::asio::streambuf&);
-  void addChangeListener(StateListenerPtr);
+  void addInboundListener(StateListenerPtr);
+  void addOutboundListener(StateListenerPtr);
  protected:
   SignalState(const SignalType signalType,
               const time_t timeoutSeconds,
@@ -113,11 +114,13 @@ class SignalState : public CallProtocol::Payload {
               const time_t timeoutSeconds,
               const time_t expireSeconds,
               const boost::posix_time::ptime& timestamp,
-              const std::vector<StateListenerPtr>& listeners);
+              const std::vector<StateListenerPtr>& inboundListeners,
+              const std::vector<StateListenerPtr>& outboundListeners);
   SignalState(const SignalState&);
   SignalState& operator=(const SignalState&);
 
-  void fireStateChange(SignalStatePtr before, SignalStatePtr after);
+  void fireInboundStateChange(SignalStatePtr before, SignalStatePtr after);
+  void fireOutboundStateChange(SignalStatePtr before, SignalStatePtr after);
   virtual SignalStatePtr clone() const = 0;
   void updateTimestamp();
  private:
@@ -126,7 +129,8 @@ class SignalState : public CallProtocol::Payload {
   const time_t timeoutSeconds;
   const time_t expireSeconds;
   boost::posix_time::ptime timestamp;
-  std::vector<StateListenerPtr> listeners;
+  std::vector<StateListenerPtr> inboundListeners;
+  std::vector<StateListenerPtr> outboundListeners;
 };
 
 class AnalogState : public SignalState {

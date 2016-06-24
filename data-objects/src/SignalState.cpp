@@ -143,7 +143,8 @@ SignalState::SignalState(const SignalType signalType,
     timeoutSeconds(timeoutSeconds),
     expireSeconds(expireSeconds),
     timestamp(timestamp),
-    listeners() {
+    inboundListeners(), 
+    outboundListeners() {
 
 }
 
@@ -151,12 +152,14 @@ SignalState::SignalState(const SignalType signalType,
                          const time_t timeoutSeconds,
                          const time_t expireSeconds,
                          const boost::posix_time::ptime& timestamp,
-                         const std::vector<StateListenerPtr>& listeners)
+                         const std::vector<StateListenerPtr>& inboundListeners,
+                         const std::vector<StateListenerPtr>& outboundListeners)
   : signalType(signalType),
     timeoutSeconds(timeoutSeconds),
     expireSeconds(expireSeconds),
     timestamp(timestamp),
-    listeners(listeners) {
+    inboundListeners(inboundListeners), 
+    outboundListeners(outboundListeners) {
 
 }
 
@@ -169,12 +172,14 @@ SignalState::SignalState(const SignalState& r)
     timeoutSeconds(r.timeoutSeconds),
     expireSeconds(r.expireSeconds),
     timestamp(r.timestamp),
-    listeners(r.listeners) {
+    inboundListeners(r.inboundListeners), 
+    outboundListeners(r.outboundListeners) {
 }
 
 SignalState& SignalState::operator=(const SignalState& r) {
   this->timestamp = r.timestamp;
-  this->listeners = r.listeners;
+  this->inboundListeners = r.inboundListeners;
+  this->outboundListeners = r.outboundListeners;
 
   return *this;
 }
@@ -251,13 +256,24 @@ bool SignalState::timeout() const {
   return (td.total_seconds() > timeoutSeconds);
 }
 
-void SignalState::addChangeListener(StateListenerPtr listener) {
-  listeners.push_back(listener);
+void SignalState::addInboundListener(StateListenerPtr listener) {
+  inboundListeners.push_back(listener);
 }
 
-void SignalState::fireStateChange(SignalStatePtr before, SignalStatePtr after) {
+void SignalState::addOutboundListener(StateListenerPtr listener) {
+  outboundListeners.push_back(listener);
+}
+
+void SignalState::fireInboundStateChange(SignalStatePtr before, SignalStatePtr after) {
   StateEventPtr event = boost::make_shared<StateEvent>(before, after);
-  for(auto& listener : listeners) {
+  for(auto& listener : inboundListeners) {
+    listener->stateChanged(event);
+  }
+}
+
+void SignalState::fireOutboundStateChange(SignalStatePtr before, SignalStatePtr after) {
+  StateEventPtr event = boost::make_shared<StateEvent>(before, after);
+  for(auto& listener : outboundListeners) {
     listener->stateChanged(event);
   }
 }
@@ -308,7 +324,7 @@ void AnalogState::setValue(double v) {
   updateTimestamp();	
   SignalStatePtr after =  clone();
 
-  fireStateChange(before, after);
+  fireInboundStateChange(before, after);
 }
 
 double AnalogState::getValue() const {
@@ -375,7 +391,7 @@ void BooleanState::setValue(bool v) {
   value =  v;
   SignalStatePtr after =  clone();
 
-  fireStateChange(before, after);
+  fireInboundStateChange(before, after);
 }
 
 bool BooleanState::getValue() const {
@@ -443,7 +459,7 @@ void StringState::setValue(const string& v) {
   updateTimestamp();
   SignalStatePtr after =  clone();
 
-  fireStateChange(before, after);
+  fireInboundStateChange(before, after);
 }
 
 string StringState::getValue() const {

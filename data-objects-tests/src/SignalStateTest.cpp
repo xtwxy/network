@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE( testLoadStringState ) {
 BOOST_AUTO_TEST_CASE( testSaveStateEvent ) {
   BooleanState bs;
   MyBooleanListener::Ptr l = boost::make_shared<MyBooleanListener>();
-  bs.addChangeListener(l);
+  bs.addInboundListener(l);
   bs.setValue(true);
 
   BOOST_CHECK_EQUAL(l->isStateChanged(), true);
