@@ -244,17 +244,17 @@ class GetStateResponse : public CallProtocol::Payload {
   Signals signals;
 };
 
-class SetStateRequest : public CallProtocol::Payload {
+class UpdateStateRequest : public CallProtocol::Payload {
  public:
   const static CallProtocol::MessageType TYPE_ID = 10;
   static CallProtocol::PayloadPtr create();
 
   typedef std::map<SignalId, SignalStatePtr> Signals;
-  SetStateRequest();
-  SetStateRequest(const Signals&);
-  SetStateRequest(const SetStateRequest&);
-  virtual ~SetStateRequest();
-  SetStateRequest& operator=(const SetStateRequest&);
+  UpdateStateRequest();
+  UpdateStateRequest(const Signals&);
+  UpdateStateRequest(const UpdateStateRequest&);
+  virtual ~UpdateStateRequest();
+  UpdateStateRequest& operator=(const UpdateStateRequest&);
 
   void addSignal(const SignalId&, const SignalStatePtr);
   const SignalStatePtr getSignal(const SignalId&) const;
@@ -267,18 +267,18 @@ class SetStateRequest : public CallProtocol::Payload {
   Signals signals;
 };
 
-class SetStateResponse : public CallProtocol::Payload {
+class UpdateStateResponse : public CallProtocol::Payload {
  public:
   const static CallProtocol::MessageType TYPE_ID = 11;
   static CallProtocol::PayloadPtr create();
 
   typedef uint8_t Result;
   typedef std::map<SignalId, Result> Results;
-  SetStateResponse();
-  SetStateResponse(const Results&);
-  SetStateResponse(const SetStateResponse&);
-  virtual ~SetStateResponse();
-  SetStateResponse& operator=(const SetStateResponse&);
+  UpdateStateResponse();
+  UpdateStateResponse(const Results&);
+  UpdateStateResponse(const UpdateStateResponse&);
+  virtual ~UpdateStateResponse();
+  UpdateStateResponse& operator=(const UpdateStateResponse&);
 
   void addResult(const SignalId&, const Result);
   const Result getResult(const SignalId&) const;

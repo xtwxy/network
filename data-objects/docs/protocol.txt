@@ -1,0 +1,3 @@
+1. requests/responses, events are asynchronously send and processed.
+2. requests/responses, events are sent with 'at most once' style. no retries. for overlapped events/requests, the last updates wins.
+3. data integrity is guarranted by the transport protocol, the tcp protocol. no checksums enforced on it.
