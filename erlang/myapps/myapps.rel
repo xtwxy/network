@@ -1,0 +1,8 @@
+{release,
+	{"myapps","1.0.0"},
+	{erts, "6.2"},
+	[{kernel, "3.0.3"},
+	{stdlib, "2.2"},
+	{inets, "5.10.3"},
+	{sasl, "2.4.1"},
+	{tcp_echo_server, "1.0.0"}]}.

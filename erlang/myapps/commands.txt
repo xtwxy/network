@@ -1,0 +1,3 @@
+systools:make_script("myapps", [{path, ["*/ebin"]}]).
+systools:make_tar("myapps", [{erts, "/usr/lib/erlang"},
+	{path, ["*/ebin"]}, {outdir, "."}]).

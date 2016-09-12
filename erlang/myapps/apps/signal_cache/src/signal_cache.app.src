@@ -1,0 +1,12 @@
+{application, signal_cache,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { signal_cache_app, []}},
+  {env, []}
+ ]}.

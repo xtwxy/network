@@ -1,0 +1,13 @@
+{application, door_driver,
+ [
+  {description, "door access driver for chinamobile fsu."},
+  {vsn, "1.0.0"},
+  {modules, [door_driver_app, door_driver_sup, door_driver]},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { door_driver_app, []}},
+  {env, []}
+ ]}.
