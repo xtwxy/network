@@ -1,13 +1,13 @@
-{application, signal_cache,
+{application, keyvalue_server,
  [
   {description, ""},
   {vsn, "1.0.0"},
-  {modules, [signal_cache_app, signal_cache_sup, signal_cache]},
+  {modules, [keyvalue_server_app, keyvalue_server_sup, keyvalue_server]},
   {registered, []},
   {applications, [
                   kernel,
                   stdlib
                  ]},
-  {mod, { signal_cache_app, []}},
+  {mod, { keyvalue_server_app, []}},
   {env, []}
  ]}.

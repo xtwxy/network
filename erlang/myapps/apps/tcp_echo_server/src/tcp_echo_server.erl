@@ -7,7 +7,7 @@
 		      {reuseaddr,true}]).
 -define(TCP_CONNECTION_OPTIONS, [binary,
 				 {packet, 0},
-				 {active, true},
+				 {active, once},
 				 {nodelay, true}]).
 
 %% ------------------------------------------------------------------
@@ -85,6 +85,7 @@ start_link() ->
 %% ------------------------------------------------------------------
 
 init(Args) ->
+    io:format("init(): Args = ~p~n", [Args]),
     handle_listen(Args).
 
 handle_call(_Request, _From, State) ->
