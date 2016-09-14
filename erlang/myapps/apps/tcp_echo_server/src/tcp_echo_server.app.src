@@ -9,5 +9,5 @@
                   stdlib
                  ]},
   {mod, { tcp_echo_server_app, []}},
-  {env, []}
+  {env, [{port, 2016}]}
  ]}.

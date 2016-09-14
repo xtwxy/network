@@ -1,39 +1,46 @@
-
 -module(tcp_echo_server_sup).
-
 -behaviour(supervisor).
 
 %% API
--export([start_link/0]).
+-export([start_link/0, start_socket/0]).
 
 %% Supervisor callbacks
 -export([init/1]).
-
-%% Helper macro for declaring children of supervisor
--define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
 
 %% ===================================================================
 %% API functions
 %% ===================================================================
 
 start_link() ->
-    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+    supervisor:start_link({local, ?MODULE}, ?MODULE, []). 
 
 %% ===================================================================
 %% Supervisor callbacks
 %% ===================================================================
 
 init([]) ->
-    RestartStrategy = one_for_one,
-    MaxRestarts = 5,
-    MaxSecondsBetweenRestarts = 10,
+    %%{ok, Port} = application:get_env(port),
+    {ok, ListenSocket} = gen_tcp:listen(2016, [{active,once}, {packet,line}]),
+    spawn_link(fun empty_listeners/0),
+
+    RestartStrategy = simple_one_for_one,
+    MaxRestarts = 60,
+    MaxSecondsBetweenRestarts = 3600,
 
     SupFlags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
 
-    Restart = permanent,
+    Restart = temporary,
     Shutdown = 2000,
     Type = worker,
 
-    TcpEchoServer = {tcp_echo_server, {tcp_echo_server, start_link, []},
+    TcpEchoServer = {tcp_echo_server, {tcp_echo_server, start_link, [ListenSocket]},
                    Restart, Shutdown, Type, [tcp_echo_server]},
     {ok, {SupFlags, [TcpEchoServer]}}.
+
+start_socket() ->
+    supervisor:start_child(?MODULE, []).
+
+empty_listeners() ->
+    [start_socket() || _ <- lists:seq(1, 20)],
+    ok.
+

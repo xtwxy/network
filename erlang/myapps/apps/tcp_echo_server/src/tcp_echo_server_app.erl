@@ -2,6 +2,8 @@
 
 -behaviour(application).
 
+-define(DEFAULT_PORT, 2016).
+
 %% Application callbacks
 -export([start/2, stop/1]).
 
