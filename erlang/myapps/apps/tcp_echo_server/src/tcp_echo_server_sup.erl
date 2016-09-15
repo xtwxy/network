@@ -24,8 +24,8 @@ init([]) ->
     spawn_link(fun empty_listeners/0),
 
     RestartStrategy = simple_one_for_one,
-    MaxRestarts = 60,
-    MaxSecondsBetweenRestarts = 3600,
+    MaxRestarts = 0,
+    MaxSecondsBetweenRestarts = 1,
 
     SupFlags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
 
@@ -41,6 +41,6 @@ start_socket() ->
     supervisor:start_child(?MODULE, []).
 
 empty_listeners() ->
-    [start_socket() || _ <- lists:seq(1, 20)],
+    [start_socket() || _ <- lists:seq(1, 8)],
     ok.
 

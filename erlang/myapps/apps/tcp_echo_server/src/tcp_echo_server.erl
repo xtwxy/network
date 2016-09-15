@@ -1,7 +1,7 @@
 -module(tcp_echo_server).
 -behaviour(gen_server).
 
--record(state, {name, next, socket}).
+-record(state, {socket}).
 
 %% ------------------------------------------------------------------
 %% API Function Exports
@@ -22,15 +22,13 @@
 %% ------------------------------------------------------------------
 
 start_link(Socket) ->
-    io:format("start_link: Socket = ~p~n", [Socket]),
-    gen_server:start_link({local, ?MODULE}, ?MODULE, Socket, []).
+    gen_server:start_link(?MODULE, Socket, []).
 
 %% ------------------------------------------------------------------
 %% gen_server Function Definitions
 %% ------------------------------------------------------------------
 
 init(Socket) ->
-    io:format("init: Socket = ~p~n", [Socket]),
     gen_server:cast(self(), accept),
     {ok, #state{socket=Socket}}.
 
@@ -39,11 +37,9 @@ handle_call(_Request, _From, State) ->
     {reply, ok, State}.
 
 handle_cast(accept, S = #state{socket=ListenSocket}) ->
-    io:format("handle_cast(): accept: Socket = ~p~n", [ListenSocket]),
     {ok, AcceptSocket} = gen_tcp:accept(ListenSocket),
     tcp_echo_server_sup:start_socket(), % a new acceptor is born, praise the lord
-    gen_tcp:send(AcceptSocket, "What's your character's name?"),
-    {noreply, S#state{socket=AcceptSocket, next=name}};
+    {noreply, S#state{socket=AcceptSocket}};
     
 handle_cast(stop, State) ->
     io:format("process stopped: State = ~p~n", [State]),
