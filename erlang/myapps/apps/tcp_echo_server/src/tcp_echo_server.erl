@@ -47,7 +47,7 @@ handle_cast(_Msg, State) ->
 
 handle_info({tcp, Socket, Data}, State) ->
     gen_tcp:send(Socket, Data),
-    inet:setopts(Socket, [{active, true}]),
+    inet:setopts(Socket, [{active, once}]),
     {noreply, State};
 
 handle_info({tcp_closed, Socket}, State) ->

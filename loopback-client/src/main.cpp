@@ -91,7 +91,7 @@ void onWriteComplete(const boost::system::error_code& ec,
 int main(int argc, char* argv[]) {
 	if(argc < 3) {
 		std::cerr << "Usage:\n"
-			<< argv[0] << "<host> <port>"
+			<< argv[0] << " <host> <port>"
 			<< std::endl; 
 			return EXIT_FAILURE;
 	} else if(argc == 4) {
