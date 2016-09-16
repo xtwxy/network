@@ -2,7 +2,7 @@
 -behaviour(supervisor).
 
 %% API
--export([start_link/0, start_socket/0]).
+-export([start_link/0, start_child/0]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -37,10 +37,10 @@ init([]) ->
                    Restart, Shutdown, Type, [tcp_echo_server]},
     {ok, {SupFlags, [TcpEchoServer]}}.
 
-start_socket() ->
+start_child() ->
     supervisor:start_child(?MODULE, []).
 
 empty_listeners() ->
-    [start_socket() || _ <- lists:seq(1, 8)],
+    [start_child() || _ <- lists:seq(1, 8)],
     ok.
 

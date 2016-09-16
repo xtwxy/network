@@ -21,36 +21,31 @@
 %% API Function Definitions
 %% ------------------------------------------------------------------
 
-start_link(Socket) ->
-    gen_server:start_link(?MODULE, Socket, []).
+start_link(ListenSocket) ->
+    gen_server:start_link(?MODULE, ListenSocket, []).
 
 %% ------------------------------------------------------------------
 %% gen_server Function Definitions
 %% ------------------------------------------------------------------
 
-init(Socket) ->
+init(ListenSocket) ->
     gen_server:cast(self(), accept),
-    {ok, #state{socket=Socket}}.
+    {ok, #state{socket=ListenSocket}}.
 
 handle_call(_Request, _From, State) ->
     io:format("_Request = ~p, _From = ~p, State = ~p~n", [_Request, _From, State]),
     {reply, ok, State}.
 
 handle_cast(accept, S = #state{socket=ListenSocket}) ->
-    {ok, AcceptSocket} = gen_tcp:accept(ListenSocket),
-    tcp_echo_server_sup:start_socket(), % a new acceptor is born, praise the lord
-    {noreply, S#state{socket=AcceptSocket}};
+    {ok, Socket} = gen_tcp:accept(ListenSocket),
+    tcp_echo_server_sup:start_child(),
+    {noreply, S#state{socket=Socket}};
     
-handle_cast(stop, State) ->
-    io:format("process stopped: State = ~p~n", [State]),
-    {stop, State};
-
 handle_cast(_Msg, State) ->
     io:format("_Msg = ~p, State = ~p~n", [_Msg, State]),
     {noreply, State}.
 
 handle_info({tcp, Socket, Data}, State) ->
-    io:format("Socket = ~p, Data = ~p~n", [Socket, Data]),
     gen_tcp:send(Socket, Data),
     inet:setopts(Socket, [{active, true}]),
     {noreply, State};
