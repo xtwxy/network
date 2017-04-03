@@ -7,7 +7,7 @@ typedef struct epoll_io_request_queue_node epoll_io_request_queue_node_s;
 typedef struct epoll_io_request_queue epoll_io_request_queue_s;
 typedef struct dispatch_context dispatch_context_s;
 
-typedef void (*epoll_dispatch_cb)(void* dispatch_context_s);
+typedef void (*epoll_dispatch_cb)(dispatch_context_s*, struct epoll_event*);
 
 struct epoll_stream_request {
 	void* bytes;
@@ -49,8 +49,21 @@ struct dispatch_context {
 	epoll_dispatch_cb dispatch;
 };
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
-extern void epoll_print_hello ();
 epoll_io_request_queue_s* epoll_create_write_request_queue();
+int create_socket_and_bind(char* node, char *service, int socktype);
+dispatch_context_s* epoll_create_dispatch_context(int efd, int fd,
+		void* user_data, epoll_dispatch_cb dispach_cb);
+void epoll_dispose_dispatch_context(dispatch_context_s* d);
+int make_fd_non_blocking(int sfd);
+int epoll_add_to_epoll_monitoring(int efd, int fd, dispatch_context_s* context);
+void epoll_event_loop(int epollfd, int max_events);
+
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
 #endif

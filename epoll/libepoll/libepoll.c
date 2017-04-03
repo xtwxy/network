@@ -85,7 +85,6 @@ void epoll_dispose_io_request_queue(epoll_io_request_queue_s* q) {
 
 dispatch_context_s* epoll_create_dispatch_context(int efd, int fd,
 		void* user_data, epoll_dispatch_cb dispach_cb) {
-	struct epoll_event event;
 
 	dispatch_context_s* d = (dispatch_context_s*) malloc(
 			sizeof(dispatch_context_s));
@@ -95,16 +94,6 @@ dispatch_context_s* epoll_create_dispatch_context(int efd, int fd,
 	d->dispatch = dispach_cb;
 	d->user_data = user_data;
 	d->write_queue = epoll_create_io_request_queue(d);
-
-	event.data.fd = fd;
-	event.events = EPOLLIN | EPOLLET;
-
-	if (epoll_ctl(efd, EPOLL_CTL_ADD, fd, &event) == 0) {
-		// success
-	} else {
-		free(d);
-		d = NULL;
-	}
 
 	return d;
 }
@@ -116,13 +105,13 @@ void epoll_dispose_dispatch_context(dispatch_context_s* d) {
 	free(d);
 }
 
-static int create_socket_and_bind(char* node, char *service, int socktype) {
+int create_socket_and_bind(char* node, char *service, int socktype) {
 	struct addrinfo hints;
 	struct addrinfo *result, *rp;
 	int s, sfd;
 
 	memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_family = AF_UNSPEC; /* Return IPv4 and IPv6 choices */
+	hints.ai_family = AF_INET; /* Return IPv4 and IPv6 choices */
 	hints.ai_socktype = socktype; /* We want a TCP socket */
 	hints.ai_flags = AI_PASSIVE; /* All interfaces */
 
@@ -156,7 +145,7 @@ static int create_socket_and_bind(char* node, char *service, int socktype) {
 	return sfd;
 }
 
-static int make_fd_non_blocking(int sfd) {
+int make_fd_non_blocking(int sfd) {
 	int flags, s;
 
 	flags = fcntl(sfd, F_GETFL, 0);
@@ -175,12 +164,44 @@ static int make_fd_non_blocking(int sfd) {
 	return 0;
 }
 
-void epoll_init(char* node,
+int epoll_add_to_epoll_monitoring(int efd, int fd, dispatch_context_s* context) {
+	struct epoll_event event;
+
+	event.events = EPOLLIN | EPOLLET; //EPOLLOUT
+	event.data.ptr = context;
+	if (epoll_ctl(efd, EPOLL_CTL_ADD, fd, &event) == 0) {
+		// success
+		return 0;
+	} else {
+		return -1;
+	}
+}
+
+void epoll_event_loop(int epollfd, int max_events) {
+	int nfds;
+	dispatch_context_s* context;
+	struct epoll_event* events = calloc(max_events, sizeof(struct epoll_event));
+
+	for(;;) {
+		nfds = epoll_wait(epollfd, events, max_events, -1);
+
+		if(nfds == -1) {
+			perror("epoll_wait()");
+			break;
+		}
+		for (int i = 0; i < nfds; ++i) {
+			context = events[i].data.ptr;
+			context->dispatch(context, &events[i]);
+		}
+	}
+	free(events);
+}
+
+int epoll_init(char* node,
 		char* service,
 		void* user_data,
 		int socket_type,
-		epoll_dispatch_cb dispach_cb) {
-	struct epoll_event ev;
+		epoll_dispatch_cb dispatch_cb) {
 	int listen_sock, epollfd;
 
 	listen_sock = create_socket_and_bind(node, service, socket_type); //SOCK_DGRAM
@@ -194,16 +215,14 @@ void epoll_init(char* node,
 		exit(EXIT_FAILURE);
 	}
 
-	ev.events = EPOLLIN;
-	ev.data.fd = listen_sock;
-	ev.data.ptr = epoll_create_dispatch_context(epollfd,
+	dispatch_context_s* context = epoll_create_dispatch_context(epollfd,
 			listen_sock,
 			user_data,
-			dispach_cb);
+			dispatch_cb);
 
-	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listen_sock, &ev) == -1) {
+	if (epoll_add_to_epoll_monitoring(epollfd, listen_sock, context) == -1) {
 		perror("epoll_ctl: listen_sock");
 		exit(EXIT_FAILURE);
 	}
-
+	return epollfd;
 }
