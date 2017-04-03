@@ -18,7 +18,7 @@ dnl Initialize Libtool
 LT_INIT
 
 AC_CONFIG_FILES(Makefile
-                exampleProgram/Makefile
+                example-udp-echo/Makefile
                 libepoll/Makefile
                 include/Makefile)
 AC_OUTPUT

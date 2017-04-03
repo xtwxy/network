@@ -2,12 +2,12 @@
 # The list of executables we are building seperated by spaces
 # the 'bin_' indicates that these build products will be installed
 # in the $(bindir) directory. For example /usr/bin
-#bin_PROGRAMS=exampleProgram
+#bin_PROGRAMS=example_udp_echo
 
 # Because a.out is only a sample program we don't want it to be installed.
 # The 'noinst_' prefix indicates that the following targets are not to be
 # installed.
-noinst_PROGRAMS=exampleProgram
+noinst_PROGRAMS=example-udp-echo
 
 #######################################
 # Build information for each executable. The variable name is derived
@@ -18,13 +18,13 @@ noinst_PROGRAMS=exampleProgram
 ACLOCAL_AMFLAGS=-I ../m4
 
 # Sources for the a.out 
-exampleProgram_SOURCES= exampleProgram.c
+example_udp_echo_SOURCES= example-udp-echo.c
 
 # Libraries for a.out
-exampleProgram_LDADD = $(top_srcdir)/libepoll/libepoll.la
+example_udp_echo_LDADD = $(top_srcdir)/libepoll/libepoll.la
 
 # Linker options for a.out
-exampleProgram_LDFLAGS = -rpath `cd $(top_srcdir);pwd`/libepoll/.libs
+example_udp_echo_LDFLAGS = -rpath `cd $(top_srcdir);pwd`/libepoll/.libs
 
 # Compiler options for a.out
-exampleProgram_CPPFLAGS = -I$(top_srcdir)/include
+example_udp_echo_CPPFLAGS = -I$(top_srcdir)/include

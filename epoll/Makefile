@@ -160,8 +160,8 @@ CTAGS = ctags
 CSCOPE = cscope
 DIST_SUBDIRS = $(SUBDIRS)
 am__DIST_COMMON = $(srcdir)/Makefile.in AUTHORS COPYING ChangeLog \
-	INSTALL NEWS README compile config.guess config.sub install-sh \
-	ltmain.sh missing
+	INSTALL NEWS README compile config.guess config.sub depcomp \
+	install-sh ltmain.sh missing
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -204,17 +204,17 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} /home/master/workspace/epoll/missing aclocal-1.15
+ACLOCAL = ${SHELL} /home/master/wincom/network/epoll/missing aclocal-1.15
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
 AR = ar
-AUTOCONF = ${SHELL} /home/master/workspace/epoll/missing autoconf
-AUTOHEADER = ${SHELL} /home/master/workspace/epoll/missing autoheader
-AUTOMAKE = ${SHELL} /home/master/workspace/epoll/missing automake-1.15
+AUTOCONF = ${SHELL} /home/master/wincom/network/epoll/missing autoconf
+AUTOHEADER = ${SHELL} /home/master/wincom/network/epoll/missing autoheader
+AUTOMAKE = ${SHELL} /home/master/wincom/network/epoll/missing automake-1.15
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -g -DNDEBUG -O2
+CFLAGS = -g -O2
 CPP = gcc -E
 CPPFLAGS = 
 CYGPATH_W = echo
@@ -244,7 +244,7 @@ LIPO =
 LN_S = ln -s
 LTLIBOBJS = 
 LT_SYS_LIBRARY_PATH = 
-MAKEINFO = ${SHELL} /home/master/workspace/epoll/missing makeinfo
+MAKEINFO = ${SHELL} /home/master/wincom/network/epoll/missing makeinfo
 MANIFEST_TOOL = :
 MKDIR_P = /usr/bin/mkdir -p
 NM = /usr/bin/nm -B
@@ -267,10 +267,10 @@ SET_MAKE =
 SHELL = /bin/sh
 STRIP = strip
 VERSION = 1.0
-abs_builddir = /home/master/workspace/epoll
-abs_srcdir = /home/master/workspace/epoll
-abs_top_builddir = /home/master/workspace/epoll
-abs_top_srcdir = /home/master/workspace/epoll
+abs_builddir = /home/master/wincom/network/epoll
+abs_srcdir = /home/master/wincom/network/epoll
+abs_top_builddir = /home/master/wincom/network/epoll
+abs_top_srcdir = /home/master/wincom/network/epoll
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_DUMPBIN = 
@@ -299,7 +299,7 @@ host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/master/workspace/epoll/install-sh
+install_sh = ${SHELL} /home/master/wincom/network/epoll/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -323,7 +323,7 @@ target_vendor = unknown
 top_build_prefix = 
 top_builddir = .
 top_srcdir = .
-SUBDIRS = libepoll include exampleProgram
+SUBDIRS = libepoll include example-udp-echo
 ACLOCAL_AMFLAGS = -I m4
 all: all-recursive
 

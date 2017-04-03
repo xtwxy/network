@@ -393,7 +393,7 @@ on `(hostname || uname -n) 2>/dev/null | sed 1q`
 "
 
 # Files that config.status was made for.
-config_files=" Makefile exampleProgram/Makefile libepoll/Makefile include/Makefile"
+config_files=" Makefile example-udp-echo/Makefile libepoll/Makefile include/Makefile"
 config_commands=" depfiles libtool"
 
 ac_cs_usage="\
@@ -431,7 +431,7 @@ Copyright (C) 2012 Free Software Foundation, Inc.
 This config.status script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it."
 
-ac_pwd='/home/master/workspace/epoll'
+ac_pwd='/home/master/wincom/network/epoll'
 srcdir='.'
 INSTALL='/usr/bin/install -c'
 MKDIR_P='/usr/bin/mkdir -p'
@@ -732,7 +732,7 @@ do
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
-    "exampleProgram/Makefile") CONFIG_FILES="$CONFIG_FILES exampleProgram/Makefile" ;;
+    "example-udp-echo/Makefile") CONFIG_FILES="$CONFIG_FILES example-udp-echo/Makefile" ;;
     "libepoll/Makefile") CONFIG_FILES="$CONFIG_FILES libepoll/Makefile" ;;
     "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
 
@@ -850,12 +850,12 @@ S["mkdir_p"]="$(MKDIR_P)"
 S["MKDIR_P"]="/usr/bin/mkdir -p"
 S["INSTALL_STRIP_PROGRAM"]="$(install_sh) -c -s"
 S["STRIP"]="strip"
-S["install_sh"]="${SHELL} /home/master/workspace/epoll/install-sh"
-S["MAKEINFO"]="${SHELL} /home/master/workspace/epoll/missing makeinfo"
-S["AUTOHEADER"]="${SHELL} /home/master/workspace/epoll/missing autoheader"
-S["AUTOMAKE"]="${SHELL} /home/master/workspace/epoll/missing automake-1.15"
-S["AUTOCONF"]="${SHELL} /home/master/workspace/epoll/missing autoconf"
-S["ACLOCAL"]="${SHELL} /home/master/workspace/epoll/missing aclocal-1.15"
+S["install_sh"]="${SHELL} /home/master/wincom/network/epoll/install-sh"
+S["MAKEINFO"]="${SHELL} /home/master/wincom/network/epoll/missing makeinfo"
+S["AUTOHEADER"]="${SHELL} /home/master/wincom/network/epoll/missing autoheader"
+S["AUTOMAKE"]="${SHELL} /home/master/wincom/network/epoll/missing automake-1.15"
+S["AUTOCONF"]="${SHELL} /home/master/wincom/network/epoll/missing autoconf"
+S["ACLOCAL"]="${SHELL} /home/master/wincom/network/epoll/missing aclocal-1.15"
 S["VERSION"]="1.0"
 S["PACKAGE"]="epoll"
 S["CYGPATH_W"]="echo"

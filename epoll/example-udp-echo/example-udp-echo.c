@@ -1,6 +1,6 @@
 /*
  ============================================================================
- Name        : exampleProgram.c
+ Name        : example-udp-echo.c
  Author      : Wangxy
  Version     :
  Copyright   : By Wangxy, all rights reserved.
@@ -9,7 +9,7 @@
  set to ${project_loc}/libepoll/.libs
  Alternatively, libtool creates a wrapper shell script in the
  build directory of this program which can be used to run it.
- Here the script will be called exampleProgram.
+ Here the script will be called example-udp-echo.
  ============================================================================
  */
 
@@ -89,13 +89,13 @@ void my_epoll_dispach_cb(dispatch_context_s* context, struct epoll_event* ee) {
 					&src_addr_len);
 
 			if(s > 0) {
-//				if (src_addr.sa_family == AF_INET) {
-//					char s[INET6_ADDRSTRLEN];
-//					struct sockaddr_in* sa = (struct sockaddr_in*)&src_addr;
-//					inet_ntop(sa->sin_family, &(sa->sin_addr), s, sizeof s);
-//					printf("recvfrom() : %s:%d\n", s, ntohs(sa->sin_port));
-//				}
-//				print_bytes(buf, s);
+				if (src_addr.sa_family == AF_INET) {
+					char s[INET6_ADDRSTRLEN];
+					struct sockaddr_in* sa = (struct sockaddr_in*)&src_addr;
+					inet_ntop(sa->sin_family, &(sa->sin_addr), s, sizeof s);
+					printf("recvfrom() : %s:%d :\n", s, ntohs(sa->sin_port));
+				}
+				print_bytes(buf, s);
 
 				sendto (context->fd,
 						buf,
