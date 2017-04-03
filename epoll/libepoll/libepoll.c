@@ -10,7 +10,6 @@
 #include <fcntl.h>
 
 #include "libepoll.h"
-#define MAX_EVENTS 10
 
 void epoll_push_back(epoll_io_request_queue_s* q, void* r) {
 	if (q == NULL || r == NULL)
@@ -181,11 +180,14 @@ void epoll_init(char* node,
 		void* user_data,
 		int socket_type,
 		epoll_dispatch_cb dispach_cb) {
-	struct epoll_event ev, events[MAX_EVENTS];
+	struct epoll_event ev;
 	int listen_sock, epollfd;
 
 	listen_sock = create_socket_and_bind(node, service, socket_type); //SOCK_DGRAM
-
+	if(make_fd_non_blocking(listen_sock) == -1) {
+		perror("make_fd_non_blocking: listen_sock");
+				exit(EXIT_FAILURE);
+	}
 	epollfd = epoll_create1(0);
 	if (epollfd == -1) {
 		perror("epoll_create1");
