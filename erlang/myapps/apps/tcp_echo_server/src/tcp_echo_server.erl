@@ -46,6 +46,7 @@ handle_cast(_Msg, State) ->
     {noreply, State}.
 
 handle_info({tcp, Socket, Data}, State) ->
+    io:format("~p~n", [Data]),
     gen_tcp:send(Socket, Data),
     inet:setopts(Socket, [{active, once}]),
     {noreply, State};

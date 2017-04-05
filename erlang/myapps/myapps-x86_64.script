@@ -1,4 +1,4 @@
-%% script generated at {2016,9,13} {11,24,44}
+%% script generated at {2016,9,14} {17,57,1}
 {script,
     {"myapps","1.0.0"},
     [{preLoaded,
@@ -236,7 +236,7 @@
                    {registered,[]},
                    {applications,[kernel,stdlib]},
                    {included_applications,[]},
-                   {env,[]},
+                   {env,[{port,2016}]},
                    {maxT,infinity},
                    {maxP,infinity},
                    {mod,{tcp_echo_server_app,[]}}]}]}},
