@@ -1,7 +1,11 @@
 AUTOMAKE_OPTIONS = subdir-objects
-lib_LIBRARIES=libevent_queue.la
 
-libevent_queue_la_SOURCES=src/main.c
+pkglib_LTLIBRARIES=event_queue.la
+event_queue_la_LDFLAGS=-module -avoid-version -shared
+#event_queue_la_LIBADD=
 
-libevent_queue_la_LDFLAGS=
-libevent_queue_la_LIBADD=
+event_queue_la_SOURCES=src/main.c
+
+#pkglib_LTLIBRARIES = scan_bulk.la
+#scan_bulk_la_LDFLAGS = -module -avoid-version -shared
+#scan_bulk_la_SOURCES=src/main.c
