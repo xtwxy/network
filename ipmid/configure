@@ -12739,7 +12739,7 @@ fi
 
 
 
-ac_config_headers="$ac_config_headers config.h"
+ac_config_headers="$ac_config_headers include/config.h"
 
 ac_config_files="$ac_config_files Makefile event_queue/Makefile ipmid/Makefile pkginfo/Makefile"
 
@@ -13758,7 +13758,7 @@ do
   case $ac_config_target in
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
-    "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
+    "include/config.h") CONFIG_HEADERS="$CONFIG_HEADERS include/config.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "event_queue/Makefile") CONFIG_FILES="$CONFIG_FILES event_queue/Makefile" ;;
     "ipmid/Makefile") CONFIG_FILES="$CONFIG_FILES ipmid/Makefile" ;;
