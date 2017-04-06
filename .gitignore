@@ -4,6 +4,7 @@
 **/dist
 **/ebin
 **/.rebar
+**/*.*~
 **/*.tar.gz
 **/*.tar.bz2
 **/*.zip
