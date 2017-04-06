@@ -8,6 +8,7 @@
 **/*.tar.bz2
 **/*.zip
 **/*.log
+**/*.status
 **/*.lo
 **/*.la
 **/*.o
@@ -19,8 +20,13 @@
 **/.idea
 **/.deps
 **/.project
+**/.autotools
 **/.cproject
 **/autom4te.cache
+**/config.h
+**/config.log
+**/stamp-h1
+**/Makefile
 
 **/*.iml
 .classpath
