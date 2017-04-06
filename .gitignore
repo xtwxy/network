@@ -25,14 +25,18 @@
 **/.cproject
 **/autom4te.cache
 **/m4
+**/aclocal.m4
 **/config.h
 **/config.log
 **/stamp-h1
 **/Makefile
+**/Makefile.in
 **/config.guess
 **/config.sub
 **/ltmain.sh
 **/ar-lib
+**/install-sh
+**/missing
 
 **/*.iml
 .classpath
