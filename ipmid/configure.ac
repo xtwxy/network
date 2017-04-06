@@ -12,11 +12,13 @@ AC_PROG_LIBTOOL
 
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_HEADERS([include/config.h])
+
 AC_CONFIG_FILES([
     Makefile
     event_queue/Makefile
     ipmid/Makefile
     pkginfo/Makefile
 ])
+
 AC_OUTPUT
 
