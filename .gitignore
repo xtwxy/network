@@ -35,6 +35,9 @@
 **/config.sub
 **/ltmain.sh
 **/ar-lib
+**/compile
+**/configure
+**/depcomp
 **/install-sh
 **/missing
 
