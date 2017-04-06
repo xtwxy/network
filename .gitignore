@@ -27,6 +27,9 @@
 **/config.log
 **/stamp-h1
 **/Makefile
+**/config.guess
+**/config.sub
+**/ltmain.sh
 
 **/*.iml
 .classpath
