@@ -1,4 +1,4 @@
-AC_INIT([ipmid], [1.0.0], [xtwxy@hotmail.com], [ipmi server daemon], [https://github.com/xtwxy])
+AC_INIT([ipmi server daemon], [1.0.0], [xtwxy@hotmail.com], [ipmid], [https://github.com/xtwxy])
 LT_PREREQ([2.4.6])
 AC_ENABLE_SHARED
 

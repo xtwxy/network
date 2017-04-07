@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
 			"version\t\t: '%s' \n"
 			"bug report\t: '%s' \n"
 			"package version\t: '%s,' \n"
-			"version string\t: '%s,' \n"
+			"version string\t: '%s' \n"
 			"tar name\t: '%s' \n"
 			"url\t\t: '%s' \n",
 			PACKAGE,
