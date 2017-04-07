@@ -21,10 +21,10 @@ ACLOCAL_AMFLAGS=-I ../m4
 example_udp_echo_SOURCES= example-udp-echo.c
 
 # Libraries for a.out
-example_udp_echo_LDADD = $(top_srcdir)/libepoll/libepoll.la
+example_udp_echo_LDADD = $(top_builddir)/libepoll/libepoll.la
 
 # Linker options for a.out
-example_udp_echo_LDFLAGS = -rpath `cd $(top_srcdir);pwd`/libepoll/.libs
+example_udp_echo_LDFLAGS = -rpath `cd $(top_builddir);pwd`/libepoll/.libs
 
 # Compiler options for a.out
-example_udp_echo_CPPFLAGS = -I$(top_srcdir)/include
+example_udp_echo_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
