@@ -18,7 +18,7 @@
 # The list of executables we are building seperated by spaces
 # the 'bin_' indicates that these build products will be installed
 # in the $(bindir) directory. For example /usr/bin
-#bin_PROGRAMS=example-udp-echo
+#bin_PROGRAMS=example_udp_echo
 
 VPATH = @srcdir@
 am__is_gnu_make = { \
@@ -109,17 +109,18 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
-am_example-udp-echo_OBJECTS = example-udp-echo.$(OBJEXT)
-example-udp-echo_OBJECTS = $(am_example-udp-echo_OBJECTS)
-example-udp-echo_DEPENDENCIES = $(top_srcdir)/libepoll/libepoll.la
+am_example_udp_echo_OBJECTS =  \
+	example_udp_echo-example-udp-echo.$(OBJEXT)
+example_udp_echo_OBJECTS = $(am_example_udp_echo_OBJECTS)
+example_udp_echo_DEPENDENCIES = $(top_srcdir)/libepoll/libepoll.la
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-example-udp-echo_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+example_udp_echo_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) $(example-udp-echo_LDFLAGS) $(LDFLAGS) -o \
-	$@
+	$(AM_CFLAGS) $(CFLAGS) $(example_udp_echo_LDFLAGS) $(LDFLAGS) \
+	-o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -154,8 +155,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(example-udp-echo_SOURCES)
-DIST_SOURCES = $(example-udp-echo_SOURCES)
+SOURCES = $(example_udp_echo_SOURCES)
+DIST_SOURCES = $(example_udp_echo_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -310,16 +311,16 @@ top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I ../m4
 
 # Sources for the a.out 
-example-udp-echo_SOURCES = example-udp-echo.c
+example_udp_echo_SOURCES = example-udp-echo.c
 
 # Libraries for a.out
-example-udp-echo_LDADD = $(top_srcdir)/libepoll/libepoll.la
+example_udp_echo_LDADD = $(top_srcdir)/libepoll/libepoll.la
 
 # Linker options for a.out
-example-udp-echo_LDFLAGS = -rpath `cd $(top_srcdir);pwd`/libepoll/.libs
+example_udp_echo_LDFLAGS = -rpath `cd $(top_srcdir);pwd`/libepoll/.libs
 
 # Compiler options for a.out
-example-udp-echo_CPPFLAGS = -I$(top_srcdir)/include
+example_udp_echo_CPPFLAGS = -I$(top_srcdir)/include
 all: all-am
 
 .SUFFIXES:
@@ -363,9 +364,9 @@ clean-noinstPROGRAMS:
 	echo " rm -f" $$list; \
 	rm -f $$list
 
-example-udp-echo$(EXEEXT): $(example-udp-echo_OBJECTS) $(example-udp-echo_DEPENDENCIES) $(EXTRA_example-udp-echo_DEPENDENCIES) 
+example-udp-echo$(EXEEXT): $(example_udp_echo_OBJECTS) $(example_udp_echo_DEPENDENCIES) $(EXTRA_example_udp_echo_DEPENDENCIES) 
 	@rm -f example-udp-echo$(EXEEXT)
-	$(AM_V_CCLD)$(example-udp-echo_LINK) $(example-udp-echo_OBJECTS) $(example-udp-echo_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(example_udp_echo_LINK) $(example_udp_echo_OBJECTS) $(example_udp_echo_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -373,7 +374,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example-udp-echo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example_udp_echo-example-udp-echo.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -396,19 +397,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
 
-example-udp-echo.o: example-udp-echo.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(example-udp-echo_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT example-udp-echo.o -MD -MP -MF $(DEPDIR)/example-udp-echo.Tpo -c -o example-udp-echo.o `test -f 'example-udp-echo.c' || echo '$(srcdir)/'`example-udp-echo.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/example-udp-echo.Tpo $(DEPDIR)/example-udp-echo.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='example-udp-echo.c' object='example-udp-echo.o' libtool=no @AMDEPBACKSLASH@
+example_udp_echo-example-udp-echo.o: example-udp-echo.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(example_udp_echo_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT example_udp_echo-example-udp-echo.o -MD -MP -MF $(DEPDIR)/example_udp_echo-example-udp-echo.Tpo -c -o example_udp_echo-example-udp-echo.o `test -f 'example-udp-echo.c' || echo '$(srcdir)/'`example-udp-echo.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/example_udp_echo-example-udp-echo.Tpo $(DEPDIR)/example_udp_echo-example-udp-echo.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='example-udp-echo.c' object='example_udp_echo-example-udp-echo.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(example-udp-echo_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o example-udp-echo.o `test -f 'example-udp-echo.c' || echo '$(srcdir)/'`example-udp-echo.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(example_udp_echo_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o example_udp_echo-example-udp-echo.o `test -f 'example-udp-echo.c' || echo '$(srcdir)/'`example-udp-echo.c
 
-example-udp-echo.obj: example-udp-echo.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(example-udp-echo_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT example-udp-echo.obj -MD -MP -MF $(DEPDIR)/example-udp-echo.Tpo -c -o example-udp-echo.obj `if test -f 'example-udp-echo.c'; then $(CYGPATH_W) 'example-udp-echo.c'; else $(CYGPATH_W) '$(srcdir)/example-udp-echo.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/example-udp-echo.Tpo $(DEPDIR)/example-udp-echo.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='example-udp-echo.c' object='example-udp-echo.obj' libtool=no @AMDEPBACKSLASH@
+example_udp_echo-example-udp-echo.obj: example-udp-echo.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(example_udp_echo_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT example_udp_echo-example-udp-echo.obj -MD -MP -MF $(DEPDIR)/example_udp_echo-example-udp-echo.Tpo -c -o example_udp_echo-example-udp-echo.obj `if test -f 'example-udp-echo.c'; then $(CYGPATH_W) 'example-udp-echo.c'; else $(CYGPATH_W) '$(srcdir)/example-udp-echo.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/example_udp_echo-example-udp-echo.Tpo $(DEPDIR)/example_udp_echo-example-udp-echo.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='example-udp-echo.c' object='example_udp_echo-example-udp-echo.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(example-udp-echo_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o example-udp-echo.obj `if test -f 'example-udp-echo.c'; then $(CYGPATH_W) 'example-udp-echo.c'; else $(CYGPATH_W) '$(srcdir)/example-udp-echo.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(example_udp_echo_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o example_udp_echo-example-udp-echo.obj `if test -f 'example-udp-echo.c'; then $(CYGPATH_W) 'example-udp-echo.c'; else $(CYGPATH_W) '$(srcdir)/example-udp-echo.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
