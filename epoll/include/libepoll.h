@@ -63,7 +63,7 @@ int epoll_add_to_epoll_monitoring(int efd, int fd, dispatch_context_s* context);
 void epoll_event_loop(int epollfd, int max_events);
 
 #ifdef __cplusplus
-	extern "C" {
+	}
 #endif
 
 #endif

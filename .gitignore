@@ -44,7 +44,7 @@
 **/*.iml
 .classpath
 .wtpmodules
-.settings
+**/.settings
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
