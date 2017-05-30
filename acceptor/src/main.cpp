@@ -44,6 +44,9 @@ public:
 			for(; icb != cbsize; ++icb) {
 				mbdata[index + icb] = cbdata[icb];
 			}
+#ifdef PRINT_BUFFER	
+			print_buffer(cbdata, cbsize);
+#endif // PRINT_BUFFER
 			index += icb;
 		}
 		assert(index == len);
@@ -79,7 +82,7 @@ int main(int argc, char* argv[]) {
 	
 	nw::Acceptor::Ptr acceptor(new nw::Acceptor(ios));
 
-	acceptor->setPort(2001).setPipelineInitializer([](codec::Pipeline& pipeline){
+	acceptor->setPort(9080).setPipelineInitializer([](codec::Pipeline& pipeline){
 		EchoHandler::Ptr echoHandler = boost::make_shared<EchoHandler>();
 		pipeline.setHandler(echoHandler->getHandler());
 	});

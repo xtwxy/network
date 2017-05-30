@@ -10,6 +10,6 @@ SOURCES = \
 INCLUDE += -Iinclude -I../codec/include -I../codec-test/include
 
 LIB += -lpthread
-CXX_FLAGS +=-std=c++11#-DPRINT_BUFFER #-DBOOST_ASIO_ENABLE_HANDLER_TRACKING
+CXX_FLAGS +=-std=c++11 -DPRINT_BUFFER #-DBOOST_ASIO_ENABLE_HANDLER_TRACKING
 
 include ../common/Makefile.in
