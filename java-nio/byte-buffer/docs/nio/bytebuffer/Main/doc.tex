@@ -1,0 +1,28 @@
+%!TEX program = xelatex
+\documentclass[UTF8]{article}
+\usepackage{xeCJK}
+\usepackage[a4paper, margin=2cm]{geometry}
+\usepackage{hyperref}
+\usepackage{listings}
+\lstset{
+extendedchars=false,
+language=java,
+basicstyle=\ttfamily, 
+%showstringspaces=true, 
+tabsize=2,
+numbers=left,
+numbersep=5pt, 
+frame=single, 
+framexleftmargin=0.8cm,
+xleftmargin=0.8cm
+}
+\hypersetup{colorlinks=true}
+
+\renewcommand{\theenumii}{\arabic{enumii}}
+\begin{document} 
+\centerline{\bf {\ttfamily java.nio.ByteBuffer Test}}
+Code:
+\lstinputlisting{../../../../src/main/java/nio/bytebuffer/Main.java}
+Output:
+\lstinputlisting{log.txt}
+\end{document}
