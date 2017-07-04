@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>network-programming.java-nio</groupId>
+	<artifactId>parent</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>parent</name>
+
+	<properties>
+		<java.source.version>1.8</java.source.version>
+		<java.class.version>1.8</java.class.version>
+		<encoding>UTF-8</encoding>
+		<project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
+		<project.resources.sourceEncoding>${encoding}</project.resources.sourceEncoding>
+		<archetype.encoding>${encoding}</archetype.encoding>
+		<junit.version>4.12</junit.version>
+		<javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
+		<jaxb-api.version>2.2.12</jaxb-api.version>
+		<jaxb-impl.version>2.1.13</jaxb-impl.version>
+		<jackson.version>2.8.7</jackson.version>
+		<json-lib.version>2.4</json-lib.version>
+		<servlet-api.version>3.1.0</servlet-api.version>
+		<spring-bridge.version>2.5.0-b30</spring-bridge.version>
+		<spring.version>4.3.6.RELEASE</spring.version>
+		<spring-data.version>1.5.0.RELEASE</spring-data.version>
+		<struts.version>2.5.10</struts.version>
+		<jersey.version>2.25</jersey.version>
+		<commons-beanutils.version>1.9.2</commons-beanutils.version>
+		<commons-csv.version>1.4</commons-csv.version>
+		<joda-time.version>2.9.4</joda-time.version>
+		<javax.mail.version>1.4.7</javax.mail.version>
+		<javax.activation.version>1.1.1</javax.activation.version>
+		<mybatis-generator-core.version>1.3.3</mybatis-generator-core.version>
+		<mybatis-spring.version>1.3.1</mybatis-spring.version>
+		<mybatis.version>3.4.2</mybatis.version>
+		<cassandra.version>3.10</cassandra.version>
+		<hectorclient.version>2.0-0</hectorclient.version>
+		<cassandra-driver-core.version>3.1.4</cassandra-driver-core.version>
+		<commons-dbcp.version>1.4</commons-dbcp.version>
+		<commons-lang.version>3.4</commons-lang.version>
+		<log4j.version>1.7.24</log4j.version>
+		<logging-log4j.version>2.7</logging-log4j.version>
+		<jtds.version>1.3.1</jtds.version>
+
+		<!-- Maven plugins version -->
+		<maven-compiler-plugin.version>2.5.1</maven-compiler-plugin.version>
+		<maven-jar-plugin.version>2.4</maven-jar-plugin.version>
+		<maven-surefire-plugin.version>2.12</maven-surefire-plugin.version>
+		<maven-glassfish-plugin.version>2.1</maven-glassfish-plugin.version>
+		<build-helper-maven-plugin.version>1.7</build-helper-maven-plugin.version>
+		<exec-maven-plugin.version>1.2.1</exec-maven-plugin.version>
+		<maven-source-plugin.version>2.4</maven-source-plugin.version>
+		<maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
+		<maven-archetype-plugin.version>2.2</maven-archetype-plugin.version>
+		<maven-resources-plugin.version>2.6</maven-resources-plugin.version>
+
+		<!-- Maven extentions version -->
+		<maven-archetype-packaging-extension.version>2.2</maven-archetype-packaging-extension.version>
+
+		<repository.releases.url>http://192.168.0.161:8081/nexus/content/repositories/releases</repository.releases.url>
+		<repository.Snapshots.url>http://192.168.0.161:8081/nexus/content/repositories/snapshots</repository.Snapshots.url>
+	</properties>
+	<!-- <repositories> <repository> <id>my-internal-site</id> <url>http://myserver/repo</url> 
+		</repository> </repositories> -->
+	<build>
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.archetype</groupId>
+				<artifactId>archetype-packaging</artifactId>
+				<version>${maven-archetype-packaging-extension.version}</version>
+			</extension>
+		</extensions>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>${maven-resources-plugin.version}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-archetype-plugin</artifactId>
+				<version>${maven-archetype-plugin.version}</version>
+				<extensions>true</extensions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-plugin.version}</version>
+				<configuration>
+					<source>${java.source.version}</source>
+					<target>${java.class.version}</target>
+					<encoding>${source.encoding}</encoding>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>${maven-source-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+                        </plugin>
+                            <!--
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>2.17</version>
+				<executions>
+					<execution>
+						<id>validate</id>
+						<phase>validate</phase>
+						<configuration>
+							<configLocation>checkstyle.xml</configLocation>
+							<encoding>UTF-8</encoding>
+							<consoleOutput>true</consoleOutput>
+							<failsOnError>true</failsOnError>
+							<linkXRef>false</linkXRef>
+						</configuration>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+                        </plugin>
+                        -->
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-javadoc-plugin</artifactId> 
+				<version>${maven-javadoc-plugin.version}</version> <executions> <execution> 
+				<id>attach-javadocs</id> <goals> <goal>jar</goal> </goals> </execution> </executions> 
+				</plugin> -->
+			<plugin>
+				<groupId>org.scala-tools</groupId>
+				<artifactId>maven-scala-plugin</artifactId>
+				<version>2.15.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+							<goal>testCompile</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<sourceDir>src/main/java</sourceDir>
+					<jvmArgs>
+						<jvmArg>-Xms64m</jvmArg>
+						<jvmArg>-Xmx1024m</jvmArg>
+					</jvmArgs>
+				</configuration>
+			</plugin>
+		</plugins>
+
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+	</build>
+
+	<distributionManagement>
+		<repository>
+			<id>releases</id>
+			<name>Internal Repository</name>
+			<url>${repository.releases.url}</url>
+		</repository>
+		<snapshotRepository>
+			<id>Snapshots</id>
+			<name>RepositoryProxy</name>
+			<url>${repository.Snapshots.url}</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+</project>

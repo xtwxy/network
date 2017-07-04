@@ -1,0 +1,14 @@
+buffer.capacity() = 8
+buffer.remaining() = 8
+buffer[0] = 0, 7 bytes remaining, capacity = 8.
+buffer[1] = 0, 6 bytes remaining, capacity = 8.
+buffer[2] = 0, 5 bytes remaining, capacity = 8.
+buffer[3] = 0, 4 bytes remaining, capacity = 8.
+buffer[4] = 0, 3 bytes remaining, capacity = 8.
+buffer[5] = 0, 2 bytes remaining, capacity = 8.
+buffer[6] = 0, 1 bytes remaining, capacity = 8.
+buffer[7] = 0, 0 bytes remaining, capacity = 8.
+Exception in thread "main" java.nio.BufferUnderflowException
+	at java.nio.Buffer.nextGetIndex(Buffer.java:500)
+	at java.nio.HeapByteBuffer.get(HeapByteBuffer.java:135)
+	at nio.bytebuffer.Main.main(Main.java:16)
