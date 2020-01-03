@@ -1,5 +1,9 @@
 systools:make_script("myapps-x86_64", [{path, ["apps/*/ebin"]}]).
+# for redhat/fedora
 systools:make_tar("myapps-x86_64", [{erts, "/usr/lib64/erlang"},
+	{path, ["apps/*/ebin"]}, {outdir, "../../dist"}]).
+# for debian based,
+systools:make_tar("myapps-x86_64", [{erts, "/usr/lib/erlang"},
 	{path, ["apps/*/ebin"]}, {outdir, "../../dist"}]).
 
 systools:make_script("myapps-armv7l", [{path, ["apps/*/ebin"]}]).
